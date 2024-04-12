@@ -11,18 +11,19 @@ import (
 var client = &http.Client{}
 
 func init() {
+	client = &http.Client{}
+
 	proxy := os.Getenv("PROXY")
+	if proxy != "" {
+		proxyURL, err := url.Parse(proxy)
+		if err != nil {
+			fmt.Println("Error parsing proxy URL:", err)
+			return
+		}
 
-	proxyURL, err := url.Parse(proxy)
-	if err != nil {
-		fmt.Println("Error parsing proxy URL:", err)
-		return
-	}
-
-	client = &http.Client{
-		Transport: &http.Transport{
+		client.Transport = &http.Transport{
 			Proxy: http.ProxyURL(proxyURL),
-		},
+		}
 	}
 }
 
