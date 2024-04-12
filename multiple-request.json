@@ -1,0 +1,49 @@
+{
+    "receiver": "webhook",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "HighCPUUsage",
+          "instance": "web-server-1",
+          "severity": "critical"
+        },
+        "annotations": {
+          "summary": "High CPU usage detected on web-server-1"
+        },
+        "startsAt": "2024-04-11T08:00:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://alertmanager:9093/graph",
+        "fingerprint": "7e389a9172f1d64b"
+      },
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "MemoryUsage",
+          "instance": "db-server-1",
+          "severity": "warning"
+        },
+        "annotations": {
+          "summary": "High memory usage detected on db-server-1"
+        },
+        "startsAt": "2024-04-11T08:05:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://alertmanager:9093/graph",
+        "fingerprint": "3e729a9172f1d64b"
+      }
+    ],
+    "groupLabels": {
+      "alertname": "HighCPUUsage"
+    },
+    "commonLabels": {
+      "alertname": "HighCPUUsage",
+      "severity": "critical"
+    },
+    "commonAnnotations": {
+      "summary": "Multiple alerts: High CPU usage and High memory usage detected"
+    },
+    "externalURL": "http://alertmanager:9093",
+    "version": "4",
+    "groupKey": "7c5a3ee70b4e67f3"
+  }
