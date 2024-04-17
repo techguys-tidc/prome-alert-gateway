@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -13,6 +14,8 @@ var client = &http.Client{}
 
 func init() {
 	client = &http.Client{}
+
+	skipTLS, _ := strconv.ParseBool(os.Getenv("SKIP_TLS_VERIFY"))
 
 	proxy := os.Getenv("PROXY")
 	if proxy != "" {
@@ -24,12 +27,9 @@ func init() {
 
 		client.Transport = &http.Transport{
 			Proxy: http.ProxyURL(proxyURL),
-		}
-	}
-
-	if os.Getenv("SKIP_TLS_VERIFY") == "true" {
-		client.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: skipTLS,
+			},
 		}
 	}
 }
