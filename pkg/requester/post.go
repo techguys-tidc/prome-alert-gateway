@@ -1,6 +1,7 @@
 package requester
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -23,6 +24,12 @@ func init() {
 
 		client.Transport = &http.Transport{
 			Proxy: http.ProxyURL(proxyURL),
+		}
+	}
+
+	if os.Getenv("SKIP_TLS_VERIFY") == "true" {
+		client.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 	}
 }
