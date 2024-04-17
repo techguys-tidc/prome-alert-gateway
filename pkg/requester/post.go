@@ -14,8 +14,7 @@ var client = &http.Client{}
 
 func init() {
 	client = &http.Client{}
-
-	skipTLS, _ := strconv.ParseBool(os.Getenv("SKIP_TLS_VERIFY"))
+	transport := &http.Transport{}
 
 	proxy := os.Getenv("PROXY")
 	if proxy != "" {
@@ -25,13 +24,16 @@ func init() {
 			return
 		}
 
-		client.Transport = &http.Transport{
-			Proxy: http.ProxyURL(proxyURL),
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: skipTLS,
-			},
+		transport.Proxy = http.ProxyURL(proxyURL)
+	}
+
+	if skipTLS, _ := strconv.ParseBool(os.Getenv("SKIP_TLS")); skipTLS {
+		transport.TLSClientConfig = &tls.Config{
+			InsecureSkipVerify: true,
 		}
 	}
+
+	client.Transport = transport
 }
 
 func PostForm(url, payload, token string) {
