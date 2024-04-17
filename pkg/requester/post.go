@@ -27,7 +27,7 @@ func init() {
 		transport.Proxy = http.ProxyURL(proxyURL)
 	}
 
-	if skipTLS, _ := strconv.ParseBool(os.Getenv("SKIP_TLS")); skipTLS {
+	if skipTLS, _ := strconv.ParseBool(os.Getenv("SKIP_TLS_VERIFY")); skipTLS {
 		transport.TLSClientConfig = &tls.Config{
 			InsecureSkipVerify: true,
 		}
