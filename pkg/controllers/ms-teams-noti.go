@@ -21,13 +21,6 @@ var template = `{
 		  "version":"1.0",
 		  "body":[
 			{
-				"type":"TextBlock",
-				"text":"**%s**",
-				"wrap":true,
-				"size":"Medium",
-				"spacing":"ExtraLarge"
-			},
-			{
 			  "type":"Container",
 			  "padding":"None",
 			  "items":[
@@ -56,7 +49,11 @@ var bodyTemaplte = `{
 		"value":"***%s***"
 	  },
 	  {
-		"title":"Message",
+		"title":"Summary",
+		"value":"%s"
+	  },
+	  {
+		"title":"Description",
 		"value":"%s"
 	  }
 	]
@@ -64,7 +61,6 @@ var bodyTemaplte = `{
 
 func MsTeamsNoti(c *gin.Context) {
 	url := c.Query("url")
-	cluster := c.Query("cluster")
 
 	payload := &models.AlrtMngReq{}
 	if err := c.BindJSON(payload); err != nil {
@@ -76,11 +72,11 @@ func MsTeamsNoti(c *gin.Context) {
 	contents := ""
 	for _, alert := range payload.Alerts {
 		contents += fmt.Sprintf(bodyTemaplte,
-			alert.Labels.AlertName, payload.Status, alert.Annotations.Summary)
+			alert.Labels.AlertName, payload.Status, alert.Annotations.Summary, alert.Annotations.Description)
 	}
 
 	contents = contents[:len(contents)-1]
-	message := fmt.Sprintf(template, cluster, contents)
+	message := fmt.Sprintf(template, contents)
 
 	requester.PostMsTeams("https://"+url, message)
 }

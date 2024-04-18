@@ -11,7 +11,6 @@ import (
 
 func LineNoti(c *gin.Context) {
 	token := c.Query("token")
-	cluster := c.Query("cluster")
 
 	payload := &models.AlrtMngReq{}
 	if err := c.BindJSON(payload); err != nil {
@@ -22,8 +21,8 @@ func LineNoti(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0})
 	for _, alert := range payload.Alerts {
 		go func(alert models.Alerts) {
-			message := fmt.Sprintf("\nCluster: %s\nStatus: %s\nAlertname: %s\nMessage: %s", cluster,
-				payload.Status, alert.Labels.AlertName, alert.Annotations.Summary)
+			message := fmt.Sprintf("\nStatus: %s\nAlertname: %s\nSummary: %s\nDesc: %s",
+				payload.Status, alert.Labels.AlertName, alert.Annotations.Summary, alert.Annotations.Description)
 
 			requester.PostForm("https://notify-api.line.me/api/notify", message, token)
 		}(alert)
