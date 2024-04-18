@@ -9,9 +9,51 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var template = `{ "type": "message", "attachments": [ { "contentType": "application/vnd.microsoft.card.adaptive", "contentUrl": null, "content": { "$schema": "http://adaptivecards.io/schemas/adaptive-card.json", "type": "AdaptiveCard", "version": "1.2", "body": [ %s ] } } ] }`
+var template = `{
+	"type":"message",
+	"attachments":[
+	  {
+		"contentType":"application/vnd.microsoft.card.adaptive",
+		"contentUrl":null,
+		"content":{
+		  "$schema":"http://adaptivecards.io/schemas/adaptive-card.json",
+		  "type":"AdaptiveCard",
+		  "version":"1.0",
+		  "body":[
+			{
+			  "type":"Container",
+			  "padding":"None",
+			  "items":[
+				%s
+			  ]
+			}
+		  ],
+		  "padding":"None"
+		}
+	  }
+	]
+  }`
 
-var bodyTemaplte = `{ "type": "TextBlock", "text": "**%s** \n - Status: ***%s*** \n - Message: %s" },`
+var bodyTemaplte = `{
+	"type":"TextBlock",
+	"text":"**%s**",
+	"wrap":true,
+	"size":"Medium",
+	"spacing":"ExtraLarge"
+  },
+  {
+	"type":"FactSet",
+	"facts":[
+	  {
+		"title":"Status",
+		"value":"***%s***"
+	  },
+	  {
+		"title":"Message",
+		"value":"%s"
+	  }
+	]
+  },`
 
 func MsTeamsNoti(c *gin.Context) {
 	url := c.Query("url")

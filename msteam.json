@@ -1,0 +1,73 @@
+{
+	"type":"message",
+	"attachments":[
+		{
+			"contentType":"application/vnd.microsoft.card.adaptive",
+			"contentUrl":null,
+			"content":
+
+
+
+
+{
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.0",
+    "body": [
+        {
+            "type": "Container",
+            "padding": "None",
+            "items": [
+                {
+                    "type": "TextBlock",
+                    "text": "**KubeDeploymentRolloutStuck.**",
+                    "wrap": true,
+                    "size": "Medium",
+                    "spacing": "ExtraLarge"
+                },
+                {
+                    "type": "FactSet",
+                    "facts": [
+                        {
+                            "title": "Status",
+                            "value": "***firing***"
+                        },
+                        {
+                            "title": "Message",
+                            "value": "Pod has been in a non-ready state for more than 15 minutes.\nPod has been in a non-ready state for more than 15 minutes.\nPod has been in a non-ready state for more than 15 minutes.\nPod has been in a non-ready state for more than 15 minutes."
+                        }
+                    ]
+                },
+                {
+                    "type": "TextBlock",
+                    "text": "**KubeDeploymentRolloutStuck.**",
+                    "wrap": true,
+                    "size": "Medium",
+                    "weight": "Bolder",
+                    "spacing": "ExtraLarge"
+                },
+                {
+                    "type": "FactSet",
+                    "facts": [
+                        {
+                            "title": "Status",
+                            "value": "***firing***"
+                        },
+                        {
+                            "title": "Message",
+                            "value": "Pod has been in a non-ready state for more than 15 minutes.\nPod has been in a non-ready state for more than 15 minutes.\nPod has been in a non-ready state for more than 15 minutes.\nPod has been in a non-ready state for more than 15 minutes."
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "padding": "None"
+}
+
+
+
+
+		}
+	]
+}
