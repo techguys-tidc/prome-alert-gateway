@@ -4,6 +4,7 @@ import (
 	"alertmanager-gateway/pkg/controllers"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,7 @@ import (
 func main() {
 	r := gin.New()
 
-	debug, _ := strconv.ParseBool("DEBUG_BODY")
+	debug, _ := strconv.ParseBool(os.Getenv("DEBUG_BODY"))
 
 	if debug {
 		r.Use(func(c *gin.Context) {
