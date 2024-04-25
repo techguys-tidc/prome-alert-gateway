@@ -23,7 +23,7 @@ func LineNoti(c *gin.Context) {
 		if payload.Status == "firing" {
 			payload.Status = "🔥" + payload.Status + "🔥"
 		} else if payload.Status == "resolved" {
-			payload.Status = "👌" + payload.Status + "👌"
+			payload.Status = "✅" + payload.Status + "✅"
 		}
 		go func(alert models.Alerts) {
 			message := fmt.Sprintf("\nStatus: %s\nAlertname: %s\nSummary: %s\nDesc: %s",
