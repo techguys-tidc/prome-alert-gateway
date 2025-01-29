@@ -1,0 +1,115 @@
+pipeline {
+  agent {
+    kubernetes {
+      yaml '''
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+          - name: docker
+            image: docker:27.5.1
+            command:
+            - sleep
+            - infinity
+            tty: true
+            volumeMounts:
+             - mountPath: /workspace
+               name: build-ci-volume
+             - mountPath: /var/run/docker.sock
+               name: docker-sock
+          - name: busybox
+            image: busybox:1.31.1
+            command:
+            - sleep
+            - infinity
+            tty: true
+            volumeMounts:
+             - mountPath: /workspace
+               name: build-ci-volume
+          volumes:
+          - mountPath: /workspace
+            name: build-ci-volume
+          - name: docker-sock
+            hostPath:
+              path: /var/run/docker.sock
+        '''
+    }
+  }
+  stages {
+    stage('Clone Git') {
+      steps {
+        dir ('workspace') {
+            container('maven') {
+                git branch: 'gong-dev', credentialsId: '6a7fdd0c-6fec-4e75-992a-46ff131d4160', url: 'git@github.com:xlinkersoul/hello-springboot.git'
+            }
+        }
+      }
+    }
+    stage('mvn clean install') {
+      steps {
+        dir ('workspace/demo') {
+            container('maven') {
+                sh '''
+                    pwd
+                    mvn clean install
+                '''
+            }
+        }
+      }
+    }
+    stage('mvn test') {
+      steps {
+        dir ('workspace/demo') {
+            container('maven') {
+                sh '''
+                    pwd
+                    mvn test
+                '''
+            }
+        }
+      }
+    }
+    stage('mvn version check') {
+      steps {
+        dir ('workspace') {
+            container('maven') {
+                sh '''
+                    pwd
+                    mvn --version
+                '''
+            }
+        }
+      }
+    }
+    stage('docker version check') {
+      steps {
+        dir ('workspace') {
+            container('docker') {
+                sh '''
+                    pwd
+                    docker --version
+                '''
+            }
+        }
+      }
+    } 
+    stage('ls git folder') {
+      steps {
+        dir ('workspace') {
+            container('busybox') {
+            sh '''
+                find -maxdepth 1
+            '''
+            }
+        }
+      }
+    }
+    // stage('Build-Jar-file') {
+    //   steps {
+    //     container('maven') {
+    //       sh 'mvn package'
+    //     }
+    //   }
+    // }
+    }
+}
