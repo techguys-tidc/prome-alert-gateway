@@ -1,0 +1,35 @@
+{
+    "receiver": "webhook",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "Test - HighCPUUsage",
+          "instance": "web-server-1",
+          "severity": "critical"
+        },
+        "annotations": {
+          "summary": "Test - High CPU usage detected on web-server-1"
+        },
+        "startsAt": "2024-04-11T08:00:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://alertmanager:9093/graph",
+        "fingerprint": "7e389a9172f1d64b"
+      }
+    ],
+    "groupLabels": {
+      "alertname": "Test - HighCPUUsage"
+    },
+    "commonLabels": {
+      "alertname": "Test - HighCPUUsage",
+      "severity": "critical"
+    },
+    "commonAnnotations": {
+      "summary": "Test - High CPU usage detected on some instances"
+    },
+    "externalURL": "http://alertmanager:9093",
+    "version": "4",
+    "groupKey": "7c5a3ee70b4e67f3"
+  }
+  
