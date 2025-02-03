@@ -1,0 +1,72 @@
+pipeline {
+  agent {
+    kubernetes {
+      yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:v1.23.2-debug
+    command:
+    - sleep
+    - infinity
+    tty: true
+    securityContext:
+      runAsUser: 0
+    volumeMounts:
+     - mountPath: /workspace
+       name: build-ci-volume
+  - name: git
+    image: alpine/git:2.47.1
+    command:
+    - sleep
+    - infinity
+    tty: true
+    volumeMounts:
+     - mountPath: /workspace
+       name: build-ci-volume
+  volumes:
+  - name: build-ci-volume
+    persistentVolumeClaim:
+      claimName: kaniko-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+        '''
+    }
+  }
+  stages {
+    // stage('Clone Git') {
+    //   steps {
+    //     dir ('workspace') {
+    //         container('kaniko') {
+    //           git branch: 'main', credentialsId: 'techguys-tidc_prome-alert-gateway-readonly', url: 'git@github.com:techguys-tidc/prome-alert-gateway.git'
+    //         }
+    //     }
+    //   }
+    // }
+    stage('containerd build') {
+      steps {
+        dir('workspace/prome-alert-gateway') {
+            container('kaniko') {
+              script {
+                def containerName = 'prome-alert-gateway'
+                def containerTag = "${env.BUILD_NUMBER}"
+                sh """
+                  #sh '/kaniko/executor --context ./ --dockerfile ./Dockerfile --destination ${containerName}:${containerTag}
+                  ls -l /workspace'
+                """
+              }
+            }
+        }
+       }
+    }
+  }
+}
