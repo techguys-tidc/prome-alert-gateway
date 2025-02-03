@@ -56,7 +56,6 @@ spec:
                     sh 'git config --global --add safe.directory $(pwd)'
                     env.TAG_VERSION = sh(script: "git fetch --tags && git describe --tags `git rev-list --tags --max-count=1`", returnStdout: true).trim()
                     echo "Latest tag: ${env.TAG_VERSION}"  
-                    sh "git checkout ${env.TAG_VERSION}"
                   }
               }
           }
