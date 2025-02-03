@@ -29,6 +29,9 @@ spec:
   }
 
   environment {
+      GIT_TAG_NAME = gitTagName()
+      GIT_TAG_MESSAGE = gitTagMessage()
+      GIT_LATEST_TAG = gitLatestTag()
       TOKEN_CONTAINER_REGISTRY = credentials('harbor_k-harbor-01-token')
       CONTAINER_REGISTRY_HOST="${params.ContainerRegistryHost}"
       CONTAINER_REGISTRY_PROJECT="${params.ContainerRegistryProject}"
@@ -41,36 +44,42 @@ spec:
       steps {
           container('git') {
               dir ('prome-alert-gateway') {
-                git branch: 'main', credentialsId: 'techguys-tidc_prome-alert-gateway-readonly', url: 'git@github.com:techguys-tidc/prome-alert-gateway.git'
+                echo "GIT_LATEST_TAG : ${env.GIT_LATEST_TAG}"
               }
           }
       }
     }
-    stage('Checkout Latest Tag') {
-        steps {
-          container('git') {
-            dir ('prome-alert-gateway') {
-                script {
-                    sh "pwd"
-                    sh "ls -1"
-                    sh 'git config --global --add safe.directory $(pwd)'
-                    env.TAG_VERSION = sh(script: "git fetch --tags && git describe --tags `git rev-list --tags --max-count=1`", returnStdout: true).trim()
-                    echo "Latest tag: ${env.TAG_VERSION}"  
-                  }
-              }
-          }
-        }
-    }
-    stage('kaniko-ls') {
-      steps {
-          container('kaniko') {
-              dir ('prome-alert-gateway') {
-                sh "pwd"
-                sh "ls -1"
-              }
-          }
-      }
-    }
+    // stage('Clone Git') {
+    //   steps {
+    //       container('git') {
+    //           dir ('prome-alert-gateway') {
+    //             git branch: 'main', credentialsId: 'techguys-tidc_prome-alert-gateway-readonly', url: 'git@github.com:techguys-tidc/prome-alert-gateway.git'
+    //           }
+    //       }
+    //   }
+    // }
+    // stage('Checkout Latest Tag') {
+    //     steps {
+    //       container('git') {
+    //         dir ('prome-alert-gateway') {
+    //             script {
+    //                 sh "pwd"
+    //                 sh "ls -1"
+    //               }
+    //           }
+    //       }
+    //     }
+    // }
+    // stage('kaniko-ls') {
+    //   steps {
+    //       container('kaniko') {
+    //           dir ('prome-alert-gateway') {
+    //             sh "pwd"
+    //             sh "ls -1"
+    //           }
+    //       }
+    //   }
+    // }
     // stage('Prepare Container Push Token') {
     //   steps {
     //       container('kaniko') {
@@ -112,4 +121,47 @@ spec:
 }
 
 
+/** @return The tag name, or `null` if the current commit isn't a tag. */
+String gitLatestTag() {
+    if (commit) {
+        desc = sh(script: "git describe --tags | head -1", returnStdout: true)?.trim()
+        if (isTag(desc)) {
+            return desc
+        }
+    }
+    return null
+}
 
+/** @return The tag name, or `null` if the current commit isn't a tag. */
+String gitTagName() {
+    commit = getCommit()
+    if (commit) {
+        desc = sh(script: "git describe --tags ${commit}", returnStdout: true)?.trim()
+        if (isTag(desc)) {
+            return desc
+        }
+    }
+    return null
+}
+
+/** @return The tag message, or `null` if the current commit isn't a tag. */
+String gitTagMessage() {
+    name = gitTagName()
+    msg = sh(script: "git tag -n10000 -l ${name}", returnStdout: true)?.trim()
+    if (msg) {
+        return msg.substring(name.size()+1, msg.size())
+    }
+    return null
+}
+
+String getCommit() {
+    return sh(script: 'git rev-parse HEAD', returnStdout: true)?.trim()
+}
+
+@NonCPS
+boolean isTag(String desc) {
+    match = desc =~ /.+-[0-9]+-g[0-9A-Fa-f]{6,}$/
+    result = !match
+    match = null // prevent serialisation
+    return result
+}
