@@ -57,7 +57,8 @@ spec:
                 def containerRegistryHost = "${params.ContainerRegistryHost}"
                 def containerRegistryProject = "${params.ContainerRegistryProject}"
                 def containerName = "${params.ContainerImageName}"
-                def containerTag = "${env.BUILD_NUMBER}"
+                // def containerTag = "${env.BUILD_NUMBER}"
+                def containerTag = "${params.ContainerImageTag}"
                 sh """
                   echo "${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}"
                   /kaniko/executor --skip-tls-verify --context ./ --dockerfile ./Dockerfile --destination ${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}
