@@ -17,7 +17,7 @@ spec:
   }
   parameters {
     string(defaultValue: 'k-harbor-01.server.maas', description: 'Container Registry Host for use in container tag', name: 'ContainerRegistryHost')
-    string(defaultValue: 'gong-public', description: 'Container Registry Project for use in container tag', name: 'ContainerRegistryProject')
+    string(defaultValue: 'prome-gateway', description: 'Container Registry Project for use in container tag', name: 'ContainerRegistryProject')
     string(defaultValue: 'prome-alert-gateway', description: 'Container Registry Tag for use in container tag', name: 'ContainerImageName')
     string(defaultValue: 'v0.0.1', description: 'Container Registry Tag for use in container tag', name: 'ContainerImageTag')
   }
@@ -49,26 +49,6 @@ spec:
           }
       }
     }
-    // stage('Prepare Container Push Token') {
-    //   steps {
-    //       withCredentials([string(credentialsId: 'harbor_k-harbor-01-token', variable: 'var_docker_push_token')]) {
-    //       container('kaniko') {
-    //           script {
-    //             def containerRegistryHost = "${params.ContainerRegistryHost}"
-    //             sh """
-    //               echo '{
-    //                 "auths": {
-    //                   "${containerRegistryHost}": {
-    //                     "auth": "$TOKEN_CONTAINER_REGISTRY"
-    //                   }
-    //                 }
-    //               }' > /kaniko/.docker/config.json
-    //             """
-    //           }
-    //       }
-    //       }
-    //   }
-    // }
     stage('kaniko build & push') {
       steps {
           container('kaniko') {
