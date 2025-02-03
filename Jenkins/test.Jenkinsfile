@@ -12,6 +12,12 @@ spec:
     - sleep
     - infinity
     tty: true
+  - name: git
+    image: alpine/git:2.47.1
+    command:
+    - sleep
+    - infinity
+    tty: true
         '''
     }
   }
@@ -31,43 +37,55 @@ spec:
   }
 
   stages {
-    stage('Prepare Container Push Token') {
-      steps {
-          container('kaniko') {
-              dir ('prome-alert-gateway') {
-                sh('echo "{\\\"auths\\\":{\\\"$CONTAINER_REGISTRY_HOST\\\":{\\\"auth\\\":\\\"$TOKEN_CONTAINER_REGISTRY\\\"}}}"  > /kaniko/.docker/config.json')
-              }
-          }
-      }
-    }
-    stage('Clone Git') {
-      steps {
-          container('kaniko') {
-              dir ('prome-alert-gateway') {
-                git branch: 'main', credentialsId: 'techguys-tidc_prome-alert-gateway-readonly', url: 'git@github.com:techguys-tidc/prome-alert-gateway.git'
-              }
-          }
-      }
-    }
-    stage('kaniko build & push') {
-      steps {
-          container('kaniko') {
-            dir('prome-alert-gateway') {
-              script {
-                def containerRegistryHost = "${params.ContainerRegistryHost}"
-                def containerRegistryProject = "${params.ContainerRegistryProject}"
-                def containerName = "${params.ContainerImageName}"
-                // def containerTag = "${env.BUILD_NUMBER}"
-                def containerTag = "${params.ContainerImageTag}"
-                sh """
-                  echo "${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}"
-                  /kaniko/executor --skip-tls-verify --context ./ --dockerfile ./Dockerfile --destination ${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}
-                """
+        stage('Checkout Latest Tag') {
+            steps {
+              container('git') {
+                  dir ('prome-alert-gateway') {
+                    script {
+                        env.TAG_VERSION = sh(script: "git fetch --tags && git describe --tags `git rev-list --tags --max-count=1`", returnStdout: true).trim()
+                        echo "Latest tag: ${env.TAG_VERSION}"  
+                        sh "git checkout ${env.TAG_VERSION}"                  }
+                  }
               }
             }
-          }
-      }
-    }
+        }
+    // stage('Prepare Container Push Token') {
+    //   steps {
+    //       container('kaniko') {
+    //           dir ('prome-alert-gateway') {
+    //             sh('echo "{\\\"auths\\\":{\\\"$CONTAINER_REGISTRY_HOST\\\":{\\\"auth\\\":\\\"$TOKEN_CONTAINER_REGISTRY\\\"}}}"  > /kaniko/.docker/config.json')
+    //           }
+    //       }
+    //   }
+    // }
+    // stage('Clone Git') {
+    //   steps {
+    //       container('kaniko') {
+    //           dir ('prome-alert-gateway') {
+    //             git branch: 'main', credentialsId: 'techguys-tidc_prome-alert-gateway-readonly', url: 'git@github.com:techguys-tidc/prome-alert-gateway.git'
+    //           }
+    //       }
+    //   }
+    // }
+    // stage('kaniko build & push') {
+    //   steps {
+    //       container('kaniko') {
+    //         dir('prome-alert-gateway') {
+    //           script {
+    //             def containerRegistryHost = "${params.ContainerRegistryHost}"
+    //             def containerRegistryProject = "${params.ContainerRegistryProject}"
+    //             def containerName = "${params.ContainerImageName}"
+    //             // def containerTag = "${env.BUILD_NUMBER}"
+    //             def containerTag = "${params.ContainerImageTag}"
+    //             sh """
+    //               echo "${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}"
+    //               /kaniko/executor --skip-tls-verify --context ./ --dockerfile ./Dockerfile --destination ${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}
+    //             """
+    //           }
+    //         }
+    //       }
+    //   }
+    // }
   }
 }
 
