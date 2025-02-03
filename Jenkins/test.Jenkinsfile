@@ -37,6 +37,7 @@ spec:
               dir ('prome-alert-gateway') {
                 sh('echo "{\"auths\":{\"$CONTAINER_REGISTRY_HOST\":{\"auth\":\"$TOKEN_CONTAINER_REGISTRY\"}}}"  > /kaniko/.docker/config.json')
                 sh('cat /kaniko/.docker/config.json')
+                sh('sleep 300')
               }
           }
       }
