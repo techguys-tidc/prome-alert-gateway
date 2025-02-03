@@ -123,7 +123,7 @@ spec:
 
 /** @return The tag name, or `null` if the current commit isn't a tag. */
 String gitLatestTag() {
-    msg = sh(script: "git tag -n10000 -l | head -1", returnStdout: true)?.trim()
+    msg = sh(script: "git tag -n10000 -l ", returnStdout: true)?.trim()
     if (msg) {
         return msg.substring(name.size()+1, msg.size())
     }
