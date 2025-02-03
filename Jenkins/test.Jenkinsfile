@@ -123,11 +123,9 @@ spec:
 
 /** @return The tag name, or `null` if the current commit isn't a tag. */
 String gitLatestTag() {
-    if (commit) {
-        desc = sh(script: "git describe --tags | head -1", returnStdout: true)?.trim()
-        if (isTag(desc)) {
-            return desc
-        }
+    msg = sh(script: "git tag -n10000 -l | head -1", returnStdout: true)?.trim()
+    if (msg) {
+        return msg.substring(name.size()+1, msg.size())
     }
     return null
 }
