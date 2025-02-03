@@ -37,8 +37,6 @@ spec:
   }
 
   stages {
-    stage('Checkout Latest Tag') {
-        steps {
     stage('Clone Git') {
       steps {
           container('git') {
@@ -48,6 +46,8 @@ spec:
           }
       }
     }
+    stage('Checkout Latest Tag') {
+        steps {
           container('git') {
             dir ('prome-alert-gateway') {
                 script {
@@ -60,6 +60,16 @@ spec:
               }
           }
         }
+    }
+    stage('kaniko-ls') {
+      steps {
+          container('kaniko') {
+              dir ('prome-alert-gateway') {
+                sh "pwd"
+                sh "ls -1"
+              }
+          }
+      }
     }
     // stage('Prepare Container Push Token') {
     //   steps {
