@@ -37,18 +37,27 @@ spec:
   }
 
   stages {
-        stage('Checkout Latest Tag') {
-            steps {
-              container('git') {
-                  dir ('prome-alert-gateway') {
-                    script {
-                        env.TAG_VERSION = sh(script: "git fetch --tags && git describe --tags `git rev-list --tags --max-count=1`", returnStdout: true).trim()
-                        echo "Latest tag: ${env.TAG_VERSION}"  
-                        sh "git checkout ${env.TAG_VERSION}"                  }
-                  }
+    stage('Clone Git') {
+      steps {
+          container('kaniko') {
+              dir ('prome-alert-gateway') {
+                git branch: 'main', credentialsId: 'techguys-tidc_prome-alert-gateway-readonly', url: 'git@github.com:techguys-tidc/prome-alert-gateway.git'
               }
-            }
+          }
+      }
+    }
+    stage('Checkout Latest Tag') {
+        steps {
+          container('git') {
+              dir ('prome-alert-gateway') {
+                script {
+                    env.TAG_VERSION = sh(script: "git fetch --tags && git describe --tags `git rev-list --tags --max-count=1`", returnStdout: true).trim()
+                    echo "Latest tag: ${env.TAG_VERSION}"  
+                    sh "git checkout ${env.TAG_VERSION}"                  }
+              }
+          }
         }
+    }
     // stage('Prepare Container Push Token') {
     //   steps {
     //       container('kaniko') {
