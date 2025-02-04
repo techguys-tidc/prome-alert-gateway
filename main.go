@@ -36,6 +36,7 @@ func main() {
 
 	r.POST("/line-notify", controllers.LineNoti)
 	r.POST("/msteams-notify", controllers.MsTeamsNoti)
+	r.POST("/uvdesk-notify", controllers.UVdeskNoti)
 
 	r.Run(":8080")
 }

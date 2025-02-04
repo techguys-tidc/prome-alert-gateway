@@ -19,4 +19,8 @@ type Annotaions struct {
 type Labels struct {
 	AlertName string `json:"alertname"`
 	Message   string `json:"message"`
+	ActAsType string `json:"actAsType"` // uvdesk parameter
+	// Name      string `json:"name"`      // uvdesk parameter
+	Subject string `json:"subject"` // uvdesk parameter
+	From    string `json:"from"`    // uvdesk parameter
 }
