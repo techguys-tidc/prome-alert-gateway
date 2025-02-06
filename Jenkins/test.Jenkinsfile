@@ -44,7 +44,7 @@ spec:
       steps {
           container('kaniko') {
               dir ('prome-alert-gateway') {
-                git branch: 'main', credentialsId: 'techguys-tidc_prome-alert-gateway-readonly', url: 'git@github.com:techguys-tidc/prome-alert-gateway.git'
+                git branch: 'dev-uvdesk', credentialsId: 'techguys-tidc_prome-alert-gateway-readonly', url: 'git@github.com:techguys-tidc/prome-alert-gateway.git'
               }
           }
       }
