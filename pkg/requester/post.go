@@ -80,31 +80,7 @@ func PostMsTeams(url, payload string) {
 	fmt.Printf("MsTeams response: %s\n", resp.Status)
 }
 
-func PostUVdesk(url, payload, token string) {
-	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(payload))
-	if err != nil {
-		fmt.Println("Error creating request:", err)
-		return
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	// q := req.URL.Query()
-	// q.Add("message", payload)
-	// req.URL.RawQuery = q.Encode()
-
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Error sending request:", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	fmt.Printf("UVdesk response: %s\n", resp.Status)
-}
-
-func PostGenAccessTokenUVdesk(url string, payload string) string {
+func PostUVdeskAccesstoken(url string, payload string) string {
 	// Create a new HTTP POST request
 	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(payload))
 	if err != nil {
@@ -136,4 +112,28 @@ func PostGenAccessTokenUVdesk(url string, payload string) string {
 
 	// Return the response
 	return responseString
+}
+
+func PostUVdeskCreateTicket(url, payload, token string) {
+	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(payload))
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	// q := req.URL.Query()
+	// q.Add("message", payload)
+	// req.URL.RawQuery = q.Encode()
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	fmt.Printf("UVdesk response: %s\n", resp.Status)
 }

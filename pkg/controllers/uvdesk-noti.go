@@ -11,48 +11,38 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var ticket_template = `{
-    "message": "%s",
-    "actAsType": "%s",
-    "name": "%s",
-    "subject": "%s",
-    "from": "%s"
-}`
-
 func UVdeskNoti(c *gin.Context) {
 	// err := godotenv.Load("../prome-alert-gateway_dev/.env")
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println("Error loading .env file:", err)
+		fmt.Println("Error loading env file:", err)
 		return
 	}
-	// token := c.Query("token")
-	createticket_endpoint := os.Getenv("CREATE_TICKET_ENDPOINT")
+	create_ticket_endpoint := os.Getenv("CREATE_TICKET_ENDPOINT")
+	access_token_endpoint := os.Getenv("GET_ACCESS_TOKEN_ENDPOINT")
 
-	msg, getaccesstoken_endpoint := models.PrepPayload_to_request_AccessTokenUVdesk()
-	if msg == "" || getaccesstoken_endpoint == "" {
+	msgBody := models.GenerateJSON_ToGetAccessToken()
+	if create_ticket_endpoint == "" || access_token_endpoint == "" || msgBody == "" {
 		fmt.Println("Missing environment variables")
 		return
 	}
 
-	token := requester.PostGenAccessTokenUVdesk(getaccesstoken_endpoint, msg)
-
+	token := requester.PostUVdeskAccesstoken(access_token_endpoint, msgBody)
 	payload := &models.AlrtMngReq{}
-
 	if err := c.BindJSON(payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"code": 0})
+
 	for _, alert := range payload.Alerts {
 		go func(alert models.Alerts) {
-			message := fmt.Sprintf(ticket_template,
-				alert.Labels.Message, alert.Labels.ActAsType, alert.Labels.AlertName, alert.Labels.Subject, alert.Labels.From)
+			UVdeskMapping := models.ConvertToUVdesk(alert)
+			UVdeskTicket := models.GenerateUVdeskJSON(UVdeskMapping)
 
-			fmt.Println(message)
-
-			requester.PostUVdesk(createticket_endpoint, message, token)
+			fmt.Println(UVdeskTicket)
+			requester.PostUVdeskCreateTicket(create_ticket_endpoint, UVdeskTicket, token)
 		}(alert)
 	}
 }
