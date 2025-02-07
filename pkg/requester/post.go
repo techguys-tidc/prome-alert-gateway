@@ -1,7 +1,9 @@
 package requester
 
 import (
+	"alertmanager-gateway/pkg/models"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -135,5 +137,22 @@ func PostUVdeskCreateTicket(url, payload, token string) {
 	}
 	defer resp.Body.Close()
 
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
+		return
+	}
+	fmt.Println("Response Body:", string(body))
+	respBody := &models.UVdeskRespBody{}
+	if err := json.Unmarshal(body, respBody); err != nil {
+		fmt.Println("Error unmarshalling response:", err)
+		return
+		// return 0, fmt.Errorf("error unmarshalling response: %v", err)
+	}
+
+	fmt.Printf("Ticket ID: %d\n", respBody.TicketId)
+	fmt.Printf("Incident Number: %d\n", respBody.Value.IncidentNumber)
 	fmt.Printf("UVdesk response: %s\n", resp.Status)
+
 }

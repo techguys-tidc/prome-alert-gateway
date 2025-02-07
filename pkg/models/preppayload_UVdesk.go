@@ -24,33 +24,33 @@ func GenerateJSON_ToGetAccessToken() string {
 		fmt.Println("Error marshalling JSON:", err)
 		return ""
 	}
-	fmt.Println(string(jsonData))
+	// fmt.Println(string(jsonData))
 	return string(jsonData)
 }
 
 // ConvertToUVdesk แปลง AlrtMngReq ไปเป็น UVdeskTicket
 func ConvertToUVdesk(alert Alerts) UVdeskTicket {
 	uvdesk := UVdeskTicket{}
-	uvdesk.Name = alert.Labels.AlertName
-	uvdesk.Message = alert.Labels.Message
-	uvdesk.ActAsType = alert.Labels.ActAsType
-	uvdesk.Subject = alert.Labels.Subject
-	uvdesk.From = alert.Labels.From
-	uvdesk.Values.FirstName = alert.Labels.AlertName
-	uvdesk.Values.LastName = "Integration User"
-	uvdesk.Values.Description = alert.Labels.Subject
-	uvdesk.Values.DetailedDescription = alert.Annotations.Summary
-	uvdesk.Values.AffectedCurrentSite = alert.Labels.Instance
-	uvdesk.Values.AssignedSupportCompany = "Lotus's"
-	uvdesk.Values.AssignedSupportOrganization = "Infrastructure"
-	uvdesk.Values.AssignedGroup = "THL3 Service Management ITSM"
-	uvdesk.Values.Impact = "2000"
-	uvdesk.Values.Urgency = "2000"
-	uvdesk.Values.ReportedSource = "Web"
-	uvdesk.Values.ServiceType = "Incident"
-	uvdesk.Values.ProductCategorizationTier1 = "Integration"
-	uvdesk.Values.ProductCategorizationTier2 = "Integration"
-	uvdesk.Values.ProductCategorizationTier3 = "NA"
+	uvdesk.Name = alert.Labels.AlertName      //test
+	uvdesk.Message = alert.Labels.Message     //test
+	uvdesk.ActAsType = alert.Labels.ActAsType //test
+	uvdesk.Subject = alert.Labels.Subject     //test
+	uvdesk.From = alert.Labels.From           //test
+	uvdesk.Values.FirstName = alert.Labels.Firstname
+	uvdesk.Values.LastName = alert.Labels.Lastname
+	uvdesk.Values.Description = alert.Labels.AlertName
+	uvdesk.Values.DetailedDescription = ""
+	uvdesk.Values.AffectedCurrentSite = alert.Labels.Affectedcurrentsite
+	uvdesk.Values.AssignedSupportCompany = alert.Labels.Assignedsupportcompnay
+	uvdesk.Values.AssignedSupportOrganization = alert.Labels.Assignedsuupportorganization
+	uvdesk.Values.AssignedGroup = alert.Labels.Assignedgroup
+	uvdesk.Values.Impact = alert.Labels.Impact
+	uvdesk.Values.Urgency = alert.Labels.Urgency
+	uvdesk.Values.ReportedSource = alert.Labels.Reportedsource
+	uvdesk.Values.ServiceType = alert.Labels.Servicetype
+	uvdesk.Values.ProductCategorizationTier1 = alert.Labels.Productcategorizationtier1
+	uvdesk.Values.ProductCategorizationTier2 = alert.Labels.Productcategorizationtier2
+	uvdesk.Values.ProductCategorizationTier3 = alert.Labels.Productcategorizationtier3
 	return uvdesk
 }
 

@@ -13,12 +13,25 @@ type Alerts struct {
 }
 
 type Labels struct {
-	AlertName string `json:"alertname"`
-	Message   string `json:"message"`
-	ActAsType string `json:"actAsType"` // add new mimir parameter
-	Subject   string `json:"subject"`   // add new mimir parameter
-	From      string `json:"from"`      // add new mimir parameter
-	Instance  string `json:"instance"`  // add new mimir parameter
+	AlertName                    string `json:"alertname"`
+	Message                      string `json:"message"`
+	ActAsType                    string `json:"actAsType"` // add new mimir parameter
+	Subject                      string `json:"subject"`   // add new mimir parameter
+	From                         string `json:"from"`      // add new mimir parameter
+	Instance                     string `json:"instance"`  // add new mimir parameter
+	Firstname                    string `json:"uvdesk-firstname"`
+	Lastname                     string `json:"uvdesk-lastname"`
+	Affectedcurrentsite          string `json:"uvdesk-affectedcurrentsite"`
+	Assignedsupportcompnay       string `json:"uvdesk-assignedsupportcompnay"`
+	Assignedsuupportorganization string `json:"uvdesk-assignedsuupportorganization"`
+	Assignedgroup                string `json:"uvdesk-assignedgroup"`
+	Impact                       string `json:"uvdesk-impact"`
+	Urgency                      string `json:"uvdesk-urgency"`
+	Reportedsource               string `json:"uvdesk-reportedsource"`
+	Servicetype                  string `json:"uvdesk-servicetype"`
+	Productcategorizationtier1   string `json:"uvdesk-productcategorizationtier1"`
+	Productcategorizationtier2   string `json:"uvdesk-productcategorizationtier2"`
+	Productcategorizationtier3   string `json:"uvdesk-productcategorizationtier3"`
 }
 
 type Annotaions struct {
@@ -61,4 +74,15 @@ type Value struct {
 	ProductCategorizationTier1  string `json:"Product Categorization Tier 1"`
 	ProductCategorizationTier2  string `json:"Product Categorization Tier 2"`
 	ProductCategorizationTier3  string `json:"Product Categorization Tier 3"`
+}
+
+// UVdesk response body
+type UVdeskRespBody struct {
+	TicketId int            `json:"ticketId"`
+	Value    RespBody_Value `json:"value"`
+}
+
+type RespBody_Value struct {
+	// response body
+	IncidentNumber int `json:"Incident Number"`
 }

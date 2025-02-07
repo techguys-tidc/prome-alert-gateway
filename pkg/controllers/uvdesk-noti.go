@@ -3,6 +3,7 @@ package controllers
 import (
 	"alertmanager-gateway/pkg/models"
 	"alertmanager-gateway/pkg/requester"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -28,17 +29,32 @@ func UVdeskNoti(c *gin.Context) {
 	}
 
 	token := requester.PostUVdeskAccesstoken(access_token_endpoint, msgBody)
+
+	rawData, err := c.GetRawData()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to read request body"})
+		return
+	}
+
+	// ผูกข้อมูลดิบกับโครงสร้าง AlrtMngReq
 	payload := &models.AlrtMngReq{}
-	if err := c.BindJSON(payload); err != nil {
+	if err := json.Unmarshal(rawData, payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	// if err := c.BindJSON(payload); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	// fmt.Println(payload)
 
 	c.JSON(http.StatusOK, gin.H{"code": 0})
 
 	for _, alert := range payload.Alerts {
 		go func(alert models.Alerts) {
 			UVdeskMapping := models.ConvertToUVdesk(alert)
+			UVdeskMapping.Values.DetailedDescription = string(string(rawData)) // add rawData into DetailedDescription
+
 			UVdeskTicket := models.GenerateUVdeskJSON(UVdeskMapping)
 
 			fmt.Println(UVdeskTicket)
