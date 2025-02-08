@@ -89,3 +89,11 @@ String gitTagName() {
 String getCommit() {
     return sh(script: 'git rev-parse HEAD', returnStdout: true)?.trim()
 }
+
+@NonCPS
+boolean isTag(String desc) {
+    match = desc =~ /.+-[0-9]+-g[0-9A-Fa-f]{6,}$/
+    result = !match
+    match = null // prevent serialisation
+    return result
+}
