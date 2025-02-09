@@ -37,7 +37,7 @@ spec:
     string(defaultValue: 'v0.0.1', description: 'Container Registry Tag for use in container tag', name: 'ContainerImageTag')
     // CD - DEPLOY K8SKUSTOMIZE
     string(defaultValue: '.kubernetes-deploy-kustomize', description: 'Kustomize Path', name: 'kustomizae_path')
-    string(defaultValue: 'base', description: 'Kustomize Folder', name: 'kustomizae_folder')
+    string(defaultValue: 'base', description: 'Kustomize Folder', name: 'kustomize_folder')
     string(defaultValue: 'prome-gateway', description: 'Deploy to Target Namespace', name: 'deploy_to_namespace')
   }
 
