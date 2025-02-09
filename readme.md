@@ -12,6 +12,9 @@
 - [Call Prome Gateway API Services](#call-prome-gateway-api-services)
   - [Curl to endpoint /line-notify](#curl-to-endpoint-line-notify)
   - [Curl to endpoint /msteams-notify](#curl-to-endpoint-msteams-notify)
+- [Jenkins CI/CD](#jenkins-cicd)
+  - [CI using Jenkinsfile](#ci-using-jenkinsfile)
+  - [CD using Kuberneetes](#cd-using-kuberneetes)
 
 
 # Custom MSTeam
@@ -125,5 +128,26 @@ API_ENDPOINT=msteams-notify
 curl -X POST http://${PROME_GATEWAY_URL}/${API_ENDPOINT} \
      -H "Content-Type: application/json" \
      -d @${JSON_INPUT_FILENAME}
+}
+```
+
+# Jenkins CI/CD
+
+## CI using Jenkinsfile
+
+```shell
+{
+./Jenkinsfile
+}
+```
+
+## CD using Kuberneetes
+
+```shell
+{
+export DOT_ENV_FILE="/somepath/.env"
+cd ./.kubernetes-deploy-kustomize
+cp ${DOT_ENV_FILE} base/.env
+kubectl -k base
 }
 ```
