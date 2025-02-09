@@ -16,6 +16,7 @@ spec:
     }
   }
   parameters {
+    string(defaultValue: '.kubernetes-deploy-kustomize', description: 'Kustomize Path', name: 'kustomizae_path')
     string(defaultValue: 'k-harbor-01.server.maas', description: 'Container Registry Host for use in container tag', name: 'ContainerRegistryHost')
     string(defaultValue: 'prome-gateway', description: 'Container Registry Project for use in container tag', name: 'ContainerRegistryProject')
     string(defaultValue: 'prome-alert-gateway', description: 'Container Registry Tag for use in container tag', name: 'ContainerImageName')
@@ -24,6 +25,8 @@ spec:
 
   environment {
       TOKEN_CONTAINER_REGISTRY = credentials('harbor_k-harbor-01-token')
+      APP_DOT_ENV_CREDENTIAL_ID = 'prome-gateway-agent-env'
+      KUSTOMIZE_PATH="${params.kustomizae_path}"
       CONTAINER_REGISTRY_HOST="${params.ContainerRegistryHost}"
       CONTAINER_REGISTRY_PROJECT="${params.ContainerRegistryProject}"
       CONTAINER_REGISTRY_CONTAINER_NAME="${params.ContainerImageName}"
@@ -32,44 +35,51 @@ spec:
   }
 
   stages {
-    stage('Prepare Container Push Token') {
-      steps {
-          container('kaniko') {
-              dir ('prome-alert-gateway') {
-                sh('echo "{\\\"auths\\\":{\\\"$CONTAINER_REGISTRY_HOST\\\":{\\\"auth\\\":\\\"$TOKEN_CONTAINER_REGISTRY\\\"}}}"  > /kaniko/.docker/config.json')
-              }
-          }
-      }
-    }
-    stage('Clone Git') {
-      steps {
-          container('kaniko') {
-              dir ('prome-alert-gateway') {
-                git branch: 'main', credentialsId: 'techguys-tidc_prome-alert-gateway-readonly', url: 'git@github.com:techguys-tidc/prome-alert-gateway.git'
-              }
-          }
-      }
-    }
-    stage('kaniko build & push') {
-      steps {
-          container('kaniko') {
-            dir('prome-alert-gateway') {
-              script {
-                def containerRegistryHost = "${params.ContainerRegistryHost}"
-                def containerRegistryProject = "${params.ContainerRegistryProject}"
-                def containerName = "${params.ContainerImageName}"
-                // def containerTag = "${env.BUILD_NUMBER}"
-                // def containerTag = "${params.ContainerImageTag}"
-                def containerTag = "${env.GIT_TAG_NAME}"
-                sh """
-                  echo "${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}"
-                  /kaniko/executor --skip-tls-verify --context ./ --dockerfile ./Dockerfile --destination ${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}
-                """
-              }
+        stage('Load App .env file from Jenkins Secret') {
+            steps {
+                script {
+                    container('kaniko') {
+                    def dotEnvFile = "${env.APP_DOT_ENV_FILE}"
+                      withCredentials([file(credentialsId: '${APP_DOT_ENV_CREDENTIAL_ID}', variable: 'APP_DOT_ENV_FILE')]) {
+                        dir('${KUSTOMIZE_PATH}') {
+                          sh('pwd')
+                          sh 'cp $APP_DOT_ENV_FILE .env'
+                          sh 'cat .env'
+                        }
+                      }
+                    }
+                }
             }
-          }
-      }
-    }
+        }
+    // stage('Prepare Container Push Token') {
+    //   steps {
+    //       container('kaniko') {
+    //           dir ('prome-alert-gateway') {
+    //             sh('echo "{\\\"auths\\\":{\\\"$CONTAINER_REGISTRY_HOST\\\":{\\\"auth\\\":\\\"$TOKEN_CONTAINER_REGISTRY\\\"}}}"  > /kaniko/.docker/config.json')
+    //           }
+    //       }
+    //   }
+    // }
+    // stage('kaniko build & push') {
+    //   steps {
+    //       container('kaniko') {
+    //         dir('prome-alert-gateway') {
+    //           script {
+    //             def containerRegistryHost = "${params.ContainerRegistryHost}"
+    //             def containerRegistryProject = "${params.ContainerRegistryProject}"
+    //             def containerName = "${params.ContainerImageName}"
+    //             // def containerTag = "${env.BUILD_NUMBER}"
+    //             // def containerTag = "${params.ContainerImageTag}"
+    //             def containerTag = "${env.GIT_TAG_NAME}"
+    //             sh """
+    //               echo "${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}"
+    //               /kaniko/executor --skip-tls-verify --context ./ --dockerfile ./Dockerfile --destination ${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}
+    //             """
+    //           }
+    //         }
+    //       }
+    //   }
+    // }
   }
 }
 
