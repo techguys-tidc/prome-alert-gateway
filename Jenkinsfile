@@ -71,7 +71,6 @@ spec:
     stage('CI Kaniko Build Image & Push to Harbor') {
       steps {
           container('kaniko') {
-            dir('prome-alert-gateway') {
               script {
                 def containerRegistryHost = "${params.ContainerRegistryHost}"
                 def containerRegistryProject = "${params.ContainerRegistryProject}"
@@ -84,7 +83,6 @@ spec:
                   /kaniko/executor --skip-tls-verify --context ./ --dockerfile ./Dockerfile --destination ${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}
                 """
               }
-            }
           }
       }
     }
