@@ -16,6 +16,7 @@ spec:
     }
   }
   parameters {
+    string(defaultValue: 'prome-gateway-agent-env', description: '.env file credentialid', name: 'app_dot_env_credential_id')
     string(defaultValue: '.kubernetes-deploy-kustomize', description: 'Kustomize Path', name: 'kustomizae_path')
     string(defaultValue: 'k-harbor-01.server.maas', description: 'Container Registry Host for use in container tag', name: 'ContainerRegistryHost')
     string(defaultValue: 'prome-gateway', description: 'Container Registry Project for use in container tag', name: 'ContainerRegistryProject')
@@ -25,8 +26,8 @@ spec:
 
   environment {
       TOKEN_CONTAINER_REGISTRY = credentials('harbor_k-harbor-01-token')
-      APP_DOT_ENV_CREDENTIAL_ID = 'prome-gateway-agent-env'
-      KUSTOMIZE_PATH="${params.kustomizae_path}"
+      APP_DOT_ENV_FILE = credentials("${params.app_dot_env_credential_id}")
+      KUBERNETES_KUSTOMIZE_PATH="${params.kustomizae_path}"
       CONTAINER_REGISTRY_HOST="${params.ContainerRegistryHost}"
       CONTAINER_REGISTRY_PROJECT="${params.ContainerRegistryProject}"
       CONTAINER_REGISTRY_CONTAINER_NAME="${params.ContainerImageName}"
@@ -40,9 +41,10 @@ spec:
                 script {
                     container('kaniko') {
                     def dotEnvFile = "${env.APP_DOT_ENV_FILE}"
-                      withCredentials([file(credentialsId: '${APP_DOT_ENV_CREDENTIAL_ID}', variable: 'APP_DOT_ENV_FILE')]) {
-                        dir('${KUSTOMIZE_PATH}') {
+                      withCredentials([file(credentialsId: '${env.APP_DOT_ENV_CREDENTIAL_ID}', variable: 'APP_DOT_ENV_FILE')]) {
+                        dir("${KUBERNETES_KUSTOMIZE_PATH}") {
                           sh('pwd')
+                          sh('ls')
                           sh 'cp $APP_DOT_ENV_FILE .env'
                           sh 'cat .env'
                         }
