@@ -107,7 +107,7 @@ namespace: ${env.KUBERNETES_DEPLOY_TO_NAMESPACE}
 images:
   - name: prome-alert-gateway
     newName: k-harbor-01.server.maas/prome-gateway/prome-alert-gateway
-    newTag: ${env.GIT_TAG}
+    newTag: ${env.GIT_TAG_NAME}
 
 # patches:
 #   - target:
