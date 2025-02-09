@@ -26,31 +26,69 @@ spec:
     }
   }
   parameters {
+    // CREDENTIAL NEEDS
     string(defaultValue: 'prome-gateway-agent-env', description: '.env file credentialid', name: 'app_dot_env_credential_id')
-    string(defaultValue: '.kubernetes-deploy-kustomize', description: 'Kustomize Path', name: 'kustomizae_path')
-    string(defaultValue: 'base', description: 'Kustomize Folder', name: 'kustomizae_folder')
     string(defaultValue: 'pso_cluster_kubeconfig', description: 'KubeConfig File to do deploy step', name: 'kubeconfig_credential_id')
+    string(defaultValue: 'harbor_k-harbor-01-token', description: 'Harbor Credential', name: 'harbor_user_pass_credential_id')
+    // CI - HARBOR IMAGE
     string(defaultValue: 'k-harbor-01.server.maas', description: 'Container Registry Host for use in container tag', name: 'ContainerRegistryHost')
     string(defaultValue: 'prome-gateway', description: 'Container Registry Project for use in container tag', name: 'ContainerRegistryProject')
     string(defaultValue: 'prome-alert-gateway', description: 'Container Registry Tag for use in container tag', name: 'ContainerImageName')
     string(defaultValue: 'v0.0.1', description: 'Container Registry Tag for use in container tag', name: 'ContainerImageTag')
+    // CD - DEPLOY K8SKUSTOMIZE
+    string(defaultValue: '.kubernetes-deploy-kustomize', description: 'Kustomize Path', name: 'kustomizae_path')
+    string(defaultValue: 'base', description: 'Kustomize Folder', name: 'kustomizae_folder')
   }
 
   environment {
-      TOKEN_CONTAINER_REGISTRY = credentials('harbor_k-harbor-01-token')
-      APP_DOT_ENV_FILE = credentials("${params.app_dot_env_credential_id}")
+      // # HARBOR
+      TOKEN_CONTAINER_REGISTRY = credentials("${params.harbor_user_pass_credential_id}")
+      // # KUBERNETES
       KUBERNETES_KUSTOMIZE_PATH="${params.kustomizae_path}"
       KUBERNETES_KUSTOMIZE_FOLDER="${params.kustomizae_folder}"
       KUBECONFIG_FILE = credentials("${params.kubeconfig_credential_id}")
+      // # HARBOR CONFIGURATION
       CONTAINER_REGISTRY_HOST="${params.ContainerRegistryHost}"
       CONTAINER_REGISTRY_PROJECT="${params.ContainerRegistryProject}"
       CONTAINER_REGISTRY_CONTAINER_NAME="${params.ContainerImageName}"
       CONTAINER_REGISTRY_CONTAINER_TAG="${params.ContainerImageTag}"
+      // # GIT
       GIT_TAG_NAME = gitTagName()
+      // # APPLICATION
+      APP_DOT_ENV_FILE = credentials("${params.app_dot_env_credential_id}")
   }
 
   stages {
-        stage('Kubectl') {
+    stage('Create /kaniko/.docker/config.json') {
+      steps {
+          container('kaniko') {
+              dir ('prome-alert-gateway') {
+                sh('echo "{\\\"auths\\\":{\\\"$CONTAINER_REGISTRY_HOST\\\":{\\\"auth\\\":\\\"$TOKEN_CONTAINER_REGISTRY\\\"}}}"  > /kaniko/.docker/config.json')
+              }
+          }
+      }
+    }
+    stage('CI Kaniko Build Image & Push to Harbor') {
+      steps {
+          container('kaniko') {
+            dir('prome-alert-gateway') {
+              script {
+                def containerRegistryHost = "${params.ContainerRegistryHost}"
+                def containerRegistryProject = "${params.ContainerRegistryProject}"
+                def containerName = "${params.ContainerImageName}"
+                // def containerTag = "${env.BUILD_NUMBER}"
+                // def containerTag = "${params.ContainerImageTag}"
+                def containerTag = "${env.GIT_TAG_NAME}"
+                sh """
+                  echo "${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}"
+                  /kaniko/executor --skip-tls-verify --context ./ --dockerfile ./Dockerfile --destination ${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}
+                """
+              }
+            }
+          }
+      }
+    }
+        stage('Deploy') {
             steps {
                 script {
                     container('kubectl') {
@@ -59,41 +97,14 @@ spec:
       sh('kubectl --kubeconfig ${KUBECONFIG_FILE} get node -o wide')
       sh('ls')
       sh('kubectl --kubeconfig ${KUBECONFIG_FILE} kustomize ${KUBERNETES_KUSTOMIZE_FOLDER}')
+      sh('kubectl --kubeconfig ${KUBECONFIG_FILE} apply -k ${KUBERNETES_KUSTOMIZE_FOLDER}')
       // sh "sleep 300"
                         }
                     }
                 }
             }
         }
-    // stage('Prepare Container Push Token') {
-    //   steps {
-    //       container('kaniko') {
-    //           dir ('prome-alert-gateway') {
-    //             sh('echo "{\\\"auths\\\":{\\\"$CONTAINER_REGISTRY_HOST\\\":{\\\"auth\\\":\\\"$TOKEN_CONTAINER_REGISTRY\\\"}}}"  > /kaniko/.docker/config.json')
-    //           }
-    //       }
-    //   }
-    // }
-    // stage('kaniko build & push') {
-    //   steps {
-    //       container('kaniko') {
-    //         dir('prome-alert-gateway') {
-    //           script {
-    //             def containerRegistryHost = "${params.ContainerRegistryHost}"
-    //             def containerRegistryProject = "${params.ContainerRegistryProject}"
-    //             def containerName = "${params.ContainerImageName}"
-    //             // def containerTag = "${env.BUILD_NUMBER}"
-    //             // def containerTag = "${params.ContainerImageTag}"
-    //             def containerTag = "${env.GIT_TAG_NAME}"
-    //             sh """
-    //               echo "${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}"
-    //               /kaniko/executor --skip-tls-verify --context ./ --dockerfile ./Dockerfile --destination ${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}
-    //             """
-    //           }
-    //         }
-    //       }
-    //   }
-    // }
+
   }
 }
 
