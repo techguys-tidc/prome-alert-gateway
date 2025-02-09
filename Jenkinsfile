@@ -132,7 +132,7 @@ secretGenerator:
                     echo "Generated kustomization.yaml with tag ${env.GIT_TAG}"
                     sh('cat kustomization.yaml')
                     sh('cp $APP_DOT_ENV_FILE .env')
-                    sh('cat .env')
+                    // sh('cat .env')
                     
                 }
                   }
@@ -147,9 +147,8 @@ secretGenerator:
       //sh "echo ${env.KUBECONFIG_FILE}"
       sh('kubectl --kubeconfig ${KUBECONFIG_FILE} get node -o wide')
       sh('ls')
-      sh('kubectl --kubeconfig ${KUBECONFIG_FILE} kustomize ${KUBERNETES_KUSTOMIZE_FOLDER}')
+      // sh('kubectl --kubeconfig ${KUBECONFIG_FILE} kustomize ${KUBERNETES_KUSTOMIZE_FOLDER}')
       sh('kubectl --kubeconfig ${KUBECONFIG_FILE} apply -k ${KUBERNETES_KUSTOMIZE_FOLDER}')
-      // sh "sleep 300"
                         }
                     }
                 }
