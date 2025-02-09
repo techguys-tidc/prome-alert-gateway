@@ -38,6 +38,7 @@ spec:
     // CD - DEPLOY K8SKUSTOMIZE
     string(defaultValue: '.kubernetes-deploy-kustomize', description: 'Kustomize Path', name: 'kustomizae_path')
     string(defaultValue: 'base', description: 'Kustomize Folder', name: 'kustomizae_folder')
+    string(defaultValue: 'prome-gateway', description: 'Deploy to Target Namespace', name: 'deploy_to_namespace')
   }
 
   environment {
@@ -47,6 +48,8 @@ spec:
       KUBERNETES_KUSTOMIZE_PATH="${params.kustomizae_path}"
       KUBERNETES_KUSTOMIZE_FOLDER="${params.kustomizae_folder}"
       KUBECONFIG_FILE = credentials("${params.kubeconfig_credential_id}")
+      KUBERNETES_DEPLOY_TO_NAMESPACE="${params.deploy_to_namespace}"
+      
       // # HARBOR CONFIGURATION
       CONTAINER_REGISTRY_HOST="${params.ContainerRegistryHost}"
       CONTAINER_REGISTRY_PROJECT="${params.ContainerRegistryProject}"
@@ -59,33 +62,80 @@ spec:
   }
 
   stages {
-    stage('Create /kaniko/.docker/config.json') {
-      steps {
-          container('kaniko') {
-              dir ('prome-alert-gateway') {
-                sh('echo "{\\\"auths\\\":{\\\"$CONTAINER_REGISTRY_HOST\\\":{\\\"auth\\\":\\\"$TOKEN_CONTAINER_REGISTRY\\\"}}}"  > /kaniko/.docker/config.json')
-              }
-          }
-      }
-    }
-    stage('CI Kaniko Build Image & Push to Harbor') {
-      steps {
-          container('kaniko') {
-              script {
-                def containerRegistryHost = "${params.ContainerRegistryHost}"
-                def containerRegistryProject = "${params.ContainerRegistryProject}"
-                def containerName = "${params.ContainerImageName}"
-                // def containerTag = "${env.BUILD_NUMBER}"
-                // def containerTag = "${params.ContainerImageTag}"
-                def containerTag = "${env.GIT_TAG_NAME}"
-                sh """
-                  echo "${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}"
-                  /kaniko/executor --skip-tls-verify --context ./ --dockerfile ./Dockerfile --destination ${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}
-                """
-              }
-          }
-      }
-    }
+    // stage('Create /kaniko/.docker/config.json') {
+    //   steps {
+    //       container('kaniko') {
+    //           dir ('prome-alert-gateway') {
+    //             sh('echo "{\\\"auths\\\":{\\\"$CONTAINER_REGISTRY_HOST\\\":{\\\"auth\\\":\\\"$TOKEN_CONTAINER_REGISTRY\\\"}}}"  > /kaniko/.docker/config.json')
+    //           }
+    //       }
+    //   }
+    // }
+    // stage('CI Kaniko Build Image & Push to Harbor') {
+    //   steps {
+    //       container('kaniko') {
+    //           script {
+    //             def containerRegistryHost = "${params.ContainerRegistryHost}"
+    //             def containerRegistryProject = "${params.ContainerRegistryProject}"
+    //             def containerName = "${params.ContainerImageName}"
+    //             // def containerTag = "${env.BUILD_NUMBER}"
+    //             // def containerTag = "${params.ContainerImageTag}"
+    //             def containerTag = "${env.GIT_TAG_NAME}"
+    //             sh """
+    //               echo "${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}"
+    //               /kaniko/executor --skip-tls-verify --context ./ --dockerfile ./Dockerfile --destination ${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}
+    //             """
+    //           }
+    //       }
+    //   }
+    // }
+        stage('Generate Kustomization File') {
+            steps {
+                script {
+                  container('kubectl') {
+                    dir("${KUBERNETES_KUSTOMIZE_PATH}/${KUBERNETES_KUSTOMIZE_FOLDER}") {
+                    def kustomizationContent = """
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yaml
+  - service.yaml
+
+namespace: ${env.KUBERNETES_DEPLOY_TO_NAMESPACE}
+
+images:
+  - name: prome-alert-gateway
+    newName: k-harbor-01.server.maas/prome-gateway/prome-alert-gateway
+    newTag: ${env.GIT_TAG}
+
+# patches:
+#   - target:
+#       kind: Ingress
+#       name: my-app-ingress
+#     patch: |-
+#       - op: replace
+#         path: /spec/rules/0/host
+#         value: my-app.example.com  # Change this host as needed
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+secretGenerator:
+  - name: app-config
+    files:
+      - .env
+    type: Opaque
+
+"""
+                    writeFile(file: 'kustomization.yaml', text: kustomizationContent)
+                    echo "Generated kustomization.yaml with tag ${env.GIT_TAG}"
+                    sh('cat kustomization.yaml')
+                }
+                  }
+            }
+        }
+        }
         stage('Deploy') {
             steps {
                 script {
