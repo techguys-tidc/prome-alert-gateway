@@ -45,16 +45,16 @@ spec:
       // # HARBOR
       TOKEN_CONTAINER_REGISTRY = credentials("${params.harbor_user_pass_credential_id}")
       // # KUBERNETES
-      KUBERNETES_KUSTOMIZE_PATH="${params.kustomizae_path}"
-      KUBERNETES_KUSTOMIZE_FOLDER="${params.kustomizae_folder}"
+      KUBERNETES_KUSTOMIZE_PATH = "${params.kustomizae_path}"
+      KUBERNETES_KUSTOMIZE_FOLDER = "${params.kustomizae_folder}"
       KUBECONFIG_FILE = credentials("${params.kubeconfig_credential_id}")
-      KUBERNETES_DEPLOY_TO_NAMESPACE="${params.deploy_to_namespace}"
-      
+      KUBERNETES_DEPLOY_TO_NAMESPACE = "${params.deploy_to_namespace}"
+
       // # HARBOR CONFIGURATION
-      CONTAINER_REGISTRY_HOST="${params.ContainerRegistryHost}"
-      CONTAINER_REGISTRY_PROJECT="${params.ContainerRegistryProject}"
-      CONTAINER_REGISTRY_CONTAINER_NAME="${params.ContainerImageName}"
-      CONTAINER_REGISTRY_CONTAINER_TAG="${params.ContainerImageTag}"
+      CONTAINER_REGISTRY_HOST = "${params.ContainerRegistryHost}"
+      CONTAINER_REGISTRY_PROJECT = "${params.ContainerRegistryProject}"
+      CONTAINER_REGISTRY_CONTAINER_NAME = "${params.ContainerImageName}"
+      CONTAINER_REGISTRY_CONTAINER_TAG = "${params.ContainerImageTag}"
       // # GIT
       GIT_TAG_NAME = gitTagName()
       // # APPLICATION
@@ -65,7 +65,7 @@ spec:
     stage('Create /kaniko/.docker/config.json') {
       steps {
           container('kaniko') {
-              dir ('prome-alert-gateway') {
+              dir('prome-alert-gateway') {
                 sh('echo "{\\\"auths\\\":{\\\"$CONTAINER_REGISTRY_HOST\\\":{\\\"auth\\\":\\\"$TOKEN_CONTAINER_REGISTRY\\\"}}}"  > /kaniko/.docker/config.json')
               }
           }
@@ -90,11 +90,11 @@ spec:
       }
     }
         stage('Generate Kustomization File & Copy .env file') {
-            steps {
-                script {
-                  container('kubectl') {
-                    dir("${KUBERNETES_KUSTOMIZE_PATH}/${KUBERNETES_KUSTOMIZE_FOLDER}") {
-                    def kustomizationContent = """
+      steps {
+        script {
+          container('kubectl') {
+            dir("${KUBERNETES_KUSTOMIZE_PATH}/${KUBERNETES_KUSTOMIZE_FOLDER}") {
+              def kustomizationContent = """
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -128,57 +128,54 @@ secretGenerator:
     type: Opaque
 
 """
-                    writeFile(file: 'kustomization.yaml', text: kustomizationContent)
-                    echo "Generated kustomization.yaml with tag ${env.GIT_TAG}"
-                    sh('cat kustomization.yaml')
-                    sh('cp $APP_DOT_ENV_FILE .env')
-                    // sh('cat .env')
-                    
-                }
-                  }
+              writeFile(file: 'kustomization.yaml', text: kustomizationContent)
+              echo "Generated kustomization.yaml with tag ${env.GIT_TAG}"
+              sh('cat kustomization.yaml')
+              sh('cp $APP_DOT_ENV_FILE .env')
+            // sh('cat .env')
             }
+          }
         }
+      }
         }
         stage('Deploy') {
-            steps {
-                script {
-                    container('kubectl') {
-                        dir("${KUBERNETES_KUSTOMIZE_PATH}") {
-      //sh "echo ${env.KUBECONFIG_FILE}"
-      sh('kubectl --kubeconfig ${KUBECONFIG_FILE} get node -o wide')
-      sh('ls')
-      // sh('kubectl --kubeconfig ${KUBECONFIG_FILE} kustomize ${KUBERNETES_KUSTOMIZE_FOLDER}')
-      sh('kubectl --kubeconfig ${KUBECONFIG_FILE} apply -k ${KUBERNETES_KUSTOMIZE_FOLDER}')
-                        }
-                    }
-                }
+      steps {
+        script {
+          container('kubectl') {
+            dir("${KUBERNETES_KUSTOMIZE_PATH}") {
+              //sh "echo ${env.KUBECONFIG_FILE}"
+              sh('kubectl --kubeconfig ${KUBECONFIG_FILE} get node -o wide')
+              sh('ls')
+              // sh('kubectl --kubeconfig ${KUBECONFIG_FILE} kustomize ${KUBERNETES_KUSTOMIZE_FOLDER}')
+              sh('kubectl --kubeconfig ${KUBECONFIG_FILE} apply -k ${KUBERNETES_KUSTOMIZE_FOLDER}')
             }
+          }
         }
-
+      }
+        }
   }
 }
 
-
 /** @return The tag name, or `null` if the current commit isn't a tag. */
 String gitTagName() {
-    commit = getCommit()
-    if (commit) {
-        desc = sh(script: "git describe --tags ${commit}", returnStdout: true)?.trim()
-        if (isTag(desc)) {
-            return desc
-        }
+  commit = getCommit()
+  if (commit) {
+    desc = sh(script: "git describe --tags ${commit}", returnStdout: true)?.trim()
+    if (isTag(desc)) {
+      return desc
     }
-    return null
+  }
+  return null
 }
 
 String getCommit() {
-    return sh(script: 'git rev-parse HEAD', returnStdout: true)?.trim()
+  return sh(script: 'git rev-parse HEAD', returnStdout: true)?.trim()
 }
 
 @NonCPS
 boolean isTag(String desc) {
-    match = desc =~ /.+-[0-9]+-g[0-9A-Fa-f]{6,}$/
-    result = !match
-    match = null // prevent serialisation
-    return result
+  match = desc =~ /.+-[0-9]+-g[0-9A-Fa-f]{6,}$/
+  result = !match
+  match = null // prevent serialisation
+  return result
 }
