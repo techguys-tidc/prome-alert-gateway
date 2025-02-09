@@ -46,7 +46,7 @@ spec:
       TOKEN_CONTAINER_REGISTRY = credentials("${params.harbor_user_pass_credential_id}")
       // # KUBERNETES
       KUBERNETES_KUSTOMIZE_PATH = "${params.kustomizae_path}"
-      KUBERNETES_KUSTOMIZE_FOLDER = "${params.kustomizae_folder}"
+      KUBERNETES_KUSTOMIZE_FOLDER = "${params.kustomize_folder}"
       KUBECONFIG_FILE = credentials("${params.kubeconfig_credential_id}")
       KUBERNETES_DEPLOY_TO_NAMESPACE = "${params.deploy_to_namespace}"
 
