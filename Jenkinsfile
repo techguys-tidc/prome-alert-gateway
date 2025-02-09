@@ -6,9 +6,9 @@ apiVersion: v1
 kind: Pod
 spec:
   securityContext:
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
+    runAsUser: 0
+    runAsGroup: 0
+    fsGroup: 0
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.23.2-debug
