@@ -5,9 +5,19 @@ pipeline {
 apiVersion: v1
 kind: Pod
 spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.23.2-debug
+    command:
+    - sleep
+    - infinity
+    tty: true
+  - name: kubectl
+    image: bitnami/kubectl
     command:
     - sleep
     - infinity
@@ -18,6 +28,8 @@ spec:
   parameters {
     string(defaultValue: 'prome-gateway-agent-env', description: '.env file credentialid', name: 'app_dot_env_credential_id')
     string(defaultValue: '.kubernetes-deploy-kustomize', description: 'Kustomize Path', name: 'kustomizae_path')
+    string(defaultValue: 'base', description: 'Kustomize Folder', name: 'kustomizae_folder')
+    string(defaultValue: 'pso_cluster_kubeconfig', description: 'KubeConfig File to do deploy step', name: 'kubeconfig_credential_id')
     string(defaultValue: 'k-harbor-01.server.maas', description: 'Container Registry Host for use in container tag', name: 'ContainerRegistryHost')
     string(defaultValue: 'prome-gateway', description: 'Container Registry Project for use in container tag', name: 'ContainerRegistryProject')
     string(defaultValue: 'prome-alert-gateway', description: 'Container Registry Tag for use in container tag', name: 'ContainerImageName')
@@ -28,6 +40,8 @@ spec:
       TOKEN_CONTAINER_REGISTRY = credentials('harbor_k-harbor-01-token')
       APP_DOT_ENV_FILE = credentials("${params.app_dot_env_credential_id}")
       KUBERNETES_KUSTOMIZE_PATH="${params.kustomizae_path}"
+      KUBERNETES_KUSTOMIZE_FOLDER="${params.kustomizae_folder}"
+      KUBECONFIG_FILE = credentials("${params.kubeconfig_credential_id}")
       CONTAINER_REGISTRY_HOST="${params.ContainerRegistryHost}"
       CONTAINER_REGISTRY_PROJECT="${params.ContainerRegistryProject}"
       CONTAINER_REGISTRY_CONTAINER_NAME="${params.ContainerImageName}"
@@ -36,15 +50,16 @@ spec:
   }
 
   stages {
-        stage('Load App .env file from Jenkins Secret') {
+        stage('Kubectl') {
             steps {
                 script {
-                    container('kaniko') {
+                    container('kubectl') {
                         dir("${KUBERNETES_KUSTOMIZE_PATH}") {
-                          sh('pwd')
-                          sh('ls')
-                          sh 'cp $APP_DOT_ENV_FILE .env'
-                          sh 'cat .env'
+      //sh "echo ${env.KUBECONFIG_FILE}"
+      sh('kubectl --kubeconfig ${KUBECONFIG_FILE} get node -o wide')
+      sh('ls')
+      sh('kubectl --kubeconfig ${KUBECONFIG_FILE} kustomize ${KUBERNETES_KUSTOMIZE_FOLDER}')
+      // sh "sleep 300"
                         }
                     }
                 }

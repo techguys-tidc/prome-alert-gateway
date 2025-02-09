@@ -5,6 +5,8 @@ resources:
   - deployment.yaml
   - service.yaml
 
+namespace: prome-gateway
+
 images:
   - name: prome-alert-gateway
     newName: k-harbor-01.server.maas/prome-gateway/prome-alert-gateway
