@@ -89,7 +89,7 @@ spec:
           }
       }
     }
-        stage('Generate Kustomization File') {
+        stage('Generate Kustomization File & Copy .env file') {
             steps {
                 script {
                   container('kubectl') {
@@ -131,6 +131,9 @@ secretGenerator:
                     writeFile(file: 'kustomization.yaml', text: kustomizationContent)
                     echo "Generated kustomization.yaml with tag ${env.GIT_TAG}"
                     sh('cat kustomization.yaml')
+                    sh('cp $APP_DOT_ENV_FILE .env')
+                    sh('cat .env')
+                    
                 }
                   }
             }
