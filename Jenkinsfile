@@ -40,15 +40,12 @@ spec:
             steps {
                 script {
                     container('kaniko') {
-                    def dotEnvFile = "${env.APP_DOT_ENV_FILE}"
-                      withCredentials([file(credentialsId: '${env.APP_DOT_ENV_CREDENTIAL_ID}', variable: 'APP_DOT_ENV_FILE')]) {
                         dir("${KUBERNETES_KUSTOMIZE_PATH}") {
                           sh('pwd')
                           sh('ls')
                           sh 'cp $APP_DOT_ENV_FILE .env'
                           sh 'cat .env'
                         }
-                      }
                     }
                 }
             }
