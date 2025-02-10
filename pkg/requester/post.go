@@ -152,7 +152,7 @@ func PostUVdeskCreateTicket(url, payload, token string) {
 	}
 
 	fmt.Printf("Ticket ID: %d\n", respBody.TicketId)
-	fmt.Printf("Incident Number: %d\n", respBody.Value.IncidentNumber)
+	fmt.Printf("Incident Number: %d\n", respBody.Values.IncidentNumber)
 	fmt.Printf("UVdesk response: %s\n", resp.Status)
 
 }
