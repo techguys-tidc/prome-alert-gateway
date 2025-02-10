@@ -19,19 +19,19 @@ type Labels struct {
 	Subject                      string `json:"subject"`   // add new mimir parameter
 	From                         string `json:"from"`      // add new mimir parameter
 	Instance                     string `json:"instance"`  // add new mimir parameter
-	Firstname                    string `json:"uvdesk-firstname"`
-	Lastname                     string `json:"uvdesk-lastname"`
-	Affectedcurrentsite          string `json:"uvdesk-affectedcurrentsite"`
-	Assignedsupportcompnay       string `json:"uvdesk-assignedsupportcompnay"`
-	Assignedsuupportorganization string `json:"uvdesk-assignedsuupportorganization"`
-	Assignedgroup                string `json:"uvdesk-assignedgroup"`
-	Impact                       string `json:"uvdesk-impact"`
-	Urgency                      string `json:"uvdesk-urgency"`
-	Reportedsource               string `json:"uvdesk-reportedsource"`
-	Servicetype                  string `json:"uvdesk-servicetype"`
-	Productcategorizationtier1   string `json:"uvdesk-productcategorizationtier1"`
-	Productcategorizationtier2   string `json:"uvdesk-productcategorizationtier2"`
-	Productcategorizationtier3   string `json:"uvdesk-productcategorizationtier3"`
+	Firstname                    string `json:"uvdesk_firstname"`
+	Lastname                     string `json:"uvdesk_lastname"`
+	Affectedcurrentsite          string `json:"uvdesk_affectedcurrentsite"`
+	Assignedsupportcompnay       string `json:"uvdesk_assignedsupportcompnay"`
+	Assignedsuupportorganization string `json:"uvdesk_assignedsuupportorganization"`
+	Assignedgroup                string `json:"uvdesk_assignedgroup"`
+	Impact                       string `json:"uvdesk_impact"`
+	Urgency                      string `json:"uvdesk_urgency"`
+	Reportedsource               string `json:"uvdesk_reportedsource"`
+	Servicetype                  string `json:"uvdesk_servicetype"`
+	Productcategorizationtier1   string `json:"uvdesk_productcategorizationtier1"`
+	Productcategorizationtier2   string `json:"uvdesk_productcategorizationtier2"`
+	Productcategorizationtier3   string `json:"uvdesk_productcategorizationtier3"`
 }
 
 type Annotaions struct {
