@@ -78,11 +78,11 @@ type Value struct {
 
 // UVdesk response body
 type UVdeskRespBody struct {
-	TicketId int            `json:"ticketId"`
-	Value    RespBody_Value `json:"value"`
+	TicketId int             `json:"ticketId"`
+	Values   RespBody_Values `json:"values"`
 }
 
-type RespBody_Value struct {
+type RespBody_Values struct {
 	// response body
 	IncidentNumber int `json:"Incident Number"`
 }

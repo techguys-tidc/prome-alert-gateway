@@ -12,18 +12,18 @@
         "subject": "Ticket Subject",
         "from": "client_test@client.com",
         "uvdesk_firstname": "Lotuss",
-        "uvdesk_lastname": "MonitoringQA",
+        "uvdesk_lastname": "MonirotingQA",
         "uvdesk_affectedcurrentsite": "5005(สระบุรี)",
-        "uvdesk_assignedsupportcompnay": "Lotus'\\''s",
+        "uvdesk_assignedsupportcompnay": "Lotuss",
         "uvdesk_assignedsuupportorganization": "Infrastructuure",
         "uvdesk_assignedgroup": "THL3 Service Management ITSM",
         "uvdesk_impact": "2000",
         "uvdesk_urgency": "2000",
         "uvdesk_reportedsource": "Web",
         "uvdesk_servicetype": "Incident",
-        "uvdesk_productcategorizationtier1": "Integration",    
-        "uvdesk_productcategorizationtier2": "Integration",  
-        "uvdesk_productcategorizationtier3": "NA"  
+        "uvdesk_productcategorizationtier1": "Integration",
+        "uvdesk_productcategorizationtier2": "Integration",
+        "uvdesk_productcategorizationtier3": "NA"
       },
       "annotations": {
         "summary": "High CPU usage detected on web-server-1"
