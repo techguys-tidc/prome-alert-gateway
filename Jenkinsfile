@@ -39,7 +39,7 @@ spec:
                 echo "Workspace Path: ${env.WORKSPACE}"
                 withSonarQubeEnv('my-sonarqube-server') {
                   echo "SONAR-URL: ${env.SONAR_HOST_URL} "
-                  sh("sonar-scanner ${env.WORKSPACE}")
+                  sh("sonar-scanner -Dsonar.sources=${env.WORKSPACE}")
                 }
               }
           }
