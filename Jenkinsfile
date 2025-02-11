@@ -31,13 +31,21 @@ spec:
         '''
     }
   }
+  parameters {
+    // SONARQUBE
+    string(defaultValue: 'my-sonarqube-server', description: 'SonarQube in Jenkins Manage > Global > SonarQube', name: 'sonarqube_env')
+  }
+  environment {
+      // # SONARQUBE
+      SONARQUBE_ENV_NAME = "${params.sonarqube_env}"
+  }
   stages {
     stage('Code Analysis') {
       steps {
           container('sonar-scanner-cli') {
               script {
                 echo "Workspace Path: ${env.WORKSPACE}"
-                withSonarQubeEnv('my-sonarqube-server') {
+                withSonarQubeEnv("${SONARQUBE_ENV_NAME}") {
                   echo "SONAR-URL: ${env.SONAR_HOST_URL} "
                   sh("sonar-scanner -Dsonar.sources=${env.WORKSPACE}")
                 }
