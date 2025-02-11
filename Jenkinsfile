@@ -37,8 +37,7 @@ spec:
           container('sonar-scanner-cli') {
               script {
                 echo "Workspace Path: ${env.WORKSPACE}"
-                withSonarQubeEnv('my-sonarqube-server', envOnly: true) {
-                  // This expands the evironment variables SONAR_CONFIG_NAME, SONAR_HOST_URL, SONAR_AUTH_TOKEN that can be used by any script.
+                withSonarQubeEnv('my-sonarqube-server') {
                   echo "SONAR-URL: ${env.SONAR_HOST_URL} " 
                 }
               }
