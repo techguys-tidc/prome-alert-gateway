@@ -42,7 +42,7 @@ spec:
                 // def containerTag = "${env.BUILD_NUMBER}"
                 // def containerTag = "${params.ContainerImageTag}"
                 def containerTag = "${env.GIT_TAG_NAME}"
-                sh("sleep 300")
+                sh("sleep 3000")
               }
           }
       }
