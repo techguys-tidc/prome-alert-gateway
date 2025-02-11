@@ -32,17 +32,15 @@ spec:
     }
   }
   stages {
-    stage('CI Kaniko Build Image & Push to Harbor') {
+    stage('Code Analysis') {
       steps {
-          container('sonar-scanner-cli') {
+          container('my-sonarqube-server') {
               script {
-                def containerRegistryHost = "${params.ContainerRegistryHost}"
-                def containerRegistryProject = "${params.ContainerRegistryProject}"
-                def containerName = "${params.ContainerImageName}"
-                // def containerTag = "${env.BUILD_NUMBER}"
-                // def containerTag = "${params.ContainerImageTag}"
-                def containerTag = "${env.GIT_TAG_NAME}"
-                sh("sleep 3000")
+                echo "Workspace Path: ${env.WORKSPACE}"
+                withSonarQubeEnv('My SonarQube Server', envOnly: true) {
+                  // This expands the evironment variables SONAR_CONFIG_NAME, SONAR_HOST_URL, SONAR_AUTH_TOKEN that can be used by any script.
+                  echo "SONAR-URL: ${env.SONAR_HOST_URL} " 
+                }
               }
           }
       }
