@@ -69,7 +69,7 @@ spec:
 
     stage('CI Kaniko Build Image & Push to Harbor') {
       steps {
-          container('sonar-scanner-cli') {
+          container('kaniko') {
               script {
                 def containerRegistryHost = "${params.ContainerRegistryHost}"
                 def containerRegistryProject = "${params.ContainerRegistryProject}"
@@ -78,7 +78,8 @@ spec:
                 // def containerTag = "${params.ContainerImageTag}"
                 def containerTag = "${env.GIT_TAG_NAME}"
                 sh """
-                  sleep 300
+                  echo "${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}"
+                  /kaniko/executor --skip-tls-verify --context ./ --dockerfile ./Dockerfile --destination ${containerRegistryHost}/${containerRegistryProject}/${containerName}:${containerTag}
                 """
               }
           }
