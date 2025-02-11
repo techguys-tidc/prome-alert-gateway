@@ -22,6 +22,12 @@ spec:
     - sleep
     - infinity
     tty: true
+  - name: sonar-scanner-cli
+    image: sonarsource/sonar-scanner-cli:11.2
+    command:
+    - sleep
+    - infinity
+    tty: true
         '''
     }
   }
