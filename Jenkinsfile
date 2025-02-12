@@ -70,7 +70,8 @@ spec:
       CONTAINER_REGISTRY_HOST = "${params.ContainerRegistryHost}"
       CONTAINER_REGISTRY_PROJECT = "${params.ContainerRegistryProject}"
       CONTAINER_REGISTRY_CONTAINER_NAME = "${params.ContainerImageName}"
-      CONTAINER_REGISTRY_CONTAINER_TAG = "${params.ContainerImageTag}"
+      //CONTAINER_REGISTRY_CONTAINER_TAG = "${params.ContainerImageTag}"
+      CONTAINER_REGISTRY_CONTAINER_TAG = gitTagName()
 
       // # SONARQUBE
       SONARQUBE_ENV_NAME = "${params.sonarqube_env}"
@@ -269,7 +270,7 @@ try {
       }
     } catch (Exception e) {
       // If the git describe fails, return null
-      return null
+      return commit
     }
   }
   return null
