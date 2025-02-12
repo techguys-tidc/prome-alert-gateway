@@ -22,6 +22,18 @@ spec:
     - sleep
     - infinity
     tty: true
+  - name: sonar-scanner-cli
+    image: sonarsource/sonar-scanner-cli:11.2
+    command:
+    - sleep
+    - infinity
+    tty: true
+  - name: trivy
+    image: bitnami/trivy:0.59.1
+    command:
+    - sleep
+    - infinity
+    tty: true
         '''
     }
   }
@@ -29,7 +41,8 @@ spec:
     // CREDENTIAL NEEDS
     string(defaultValue: 'prome-gateway-agent-env', description: '.env file credentialid', name: 'app_dot_env_credential_id')
     string(defaultValue: 'pso_cluster_kubeconfig', description: 'KubeConfig File to do deploy step', name: 'kubeconfig_credential_id')
-    string(defaultValue: 'harbor_k-harbor-01-token', description: 'Harbor Credential', name: 'harbor_user_pass_credential_id')
+    string(defaultValue: 'harbor_k-harbor-01-username', description: 'Harbor Credential', name: 'harbor_user_credential_id')
+    string(defaultValue: 'harbor_k-harbor-01-password', description: 'Harbor Credential', name: 'harbor_password_credential_id')
     // CI - HARBOR IMAGE
     string(defaultValue: 'k-harbor-01.server.maas', description: 'Container Registry Host for use in container tag', name: 'ContainerRegistryHost')
     string(defaultValue: 'prome-gateway', description: 'Container Registry Project for use in container tag', name: 'ContainerRegistryProject')
@@ -39,11 +52,14 @@ spec:
     string(defaultValue: '.kubernetes-deploy-kustomize', description: 'Kustomize Path', name: 'kustomizae_path')
     string(defaultValue: 'base', description: 'Kustomize Folder', name: 'kustomize_folder')
     string(defaultValue: 'prome-gateway', description: 'Deploy to Target Namespace', name: 'deploy_to_namespace')
+    // SONARQUBE
+    string(defaultValue: 'my-sonarqube-server', description: 'SonarQube in Jenkins Manage > Global > SonarQube', name: 'sonarqube_env')
   }
 
   environment {
       // # HARBOR
-      TOKEN_CONTAINER_REGISTRY = credentials("${params.harbor_user_pass_credential_id}")
+      CI_REGISTRY_USER = credentials("${params.harbor_user_credential_id}")
+      CI_REGISTRY_PASSWORD = credentials("${params.harbor_password_credential_id}")
       // # KUBERNETES
       KUBERNETES_KUSTOMIZE_PATH = "${params.kustomizae_path}"
       KUBERNETES_KUSTOMIZE_FOLDER = "${params.kustomize_folder}"
@@ -54,7 +70,12 @@ spec:
       CONTAINER_REGISTRY_HOST = "${params.ContainerRegistryHost}"
       CONTAINER_REGISTRY_PROJECT = "${params.ContainerRegistryProject}"
       CONTAINER_REGISTRY_CONTAINER_NAME = "${params.ContainerImageName}"
-      CONTAINER_REGISTRY_CONTAINER_TAG = "${params.ContainerImageTag}"
+      //CONTAINER_REGISTRY_CONTAINER_TAG = "${params.ContainerImageTag}"
+      CONTAINER_REGISTRY_CONTAINER_TAG = gitTagName()
+
+      // # SONARQUBE
+      SONARQUBE_ENV_NAME = "${params.sonarqube_env}"
+
       // # GIT
       GIT_TAG_NAME = gitTagName()
       // # APPLICATION
@@ -62,16 +83,44 @@ spec:
   }
 
   stages {
-    stage('Create /kaniko/.docker/config.json') {
+    stage('Code Analysis') {
       steps {
-          container('kaniko') {
-              dir('prome-alert-gateway') {
-                sh('echo "{\\\"auths\\\":{\\\"$CONTAINER_REGISTRY_HOST\\\":{\\\"auth\\\":\\\"$TOKEN_CONTAINER_REGISTRY\\\"}}}"  > /kaniko/.docker/config.json')
+          container('sonar-scanner-cli') {
+              script {
+                echo "Workspace Path: ${env.WORKSPACE}"
+                withSonarQubeEnv("${SONARQUBE_ENV_NAME}") {
+                  echo "SONAR-URL: ${env.SONAR_HOST_URL} "
+                  sh("sonar-scanner -Dsonar.sources=${env.WORKSPACE}")
+                }
               }
           }
       }
     }
+    stage('Create /kaniko/.docker/config.json') {
+                     when {
+                not{
+                environment name: 'GIT_TAG_NAME', value: 'null'
+                }
+            }
+            steps {
+                        container('kaniko') {
+              dir(env.WORKSPACE) {
+                script {
+                    env.CI_REGISTRY_TMP = env.CI_REGISTRY_USER+":"+env.CI_REGISTRY_PASSWORD
+                    env.CI_REGISTRY_AUTH = sh(script: 'echo -n $CI_REGISTRY_TMP | base64', returnStdout: true).trim()
+                    sh('echo "{\\"auths\\":{\\"$CONTAINER_REGISTRY_HOST\\":{\\"auth\\":\\"$CI_REGISTRY_AUTH\\"}}}" > /kaniko/.docker/config.json')
+                }
+          }
+      }
+    }
+    
+  }
     stage('CI Kaniko Build Image & Push to Harbor') {
+            when {
+                not{
+                environment name: 'GIT_TAG_NAME', value: 'null'
+                }
+            }
       steps {
           container('kaniko') {
               script {
@@ -89,7 +138,47 @@ spec:
           }
       }
     }
+stage('trivy registry login') {
+                     when {
+                not{
+                environment name: 'GIT_TAG_NAME', value: 'null'
+                }
+            }
+            steps {
+                        container('trivy') {
+
+                script {
+                    env.CI_REGISTRY_TMP = env.CI_REGISTRY_USER+":"+env.CI_REGISTRY_PASSWORD
+                    env.CI_REGISTRY_AUTH = sh(script: 'echo -n $CI_REGISTRY_TMP | base64', returnStdout: true).trim()
+                    sh('trivy registry login --insecure --username \\"$CI_REGISTRY_USER\\" --password \\"$CI_REGISTRY_PASSWORD\\" $CONTAINER_REGISTRY_HOST')
+                }
+
+      }
+    }
+    
+  }
+        stage('Scan Image with Trivy') {
+                      when {
+                not{
+                environment name: 'GIT_TAG_NAME', value: 'null'
+                }
+            }
+            steps {
+                container('trivy') {
+                    script {
+                        //sh('trivy image --insecure --format template --template "@/opt/bitnami/trivy/contrib/html.tpl" -o trivy-report.html k-harbor-01.server.maas/prome-gateway/prome-alert-gateway:dev-gong-v0.0.3')
+                        sh('trivy image --insecure --format template --template "@/opt/bitnami/trivy/contrib/html.tpl" -o trivy-report.html $CONTAINER_REGISTRY_HOST/$CONTAINER_REGISTRY_PROJECT/$CONTAINER_REGISTRY_CONTAINER_NAME:$CONTAINER_REGISTRY_CONTAINER_TAG')
+                        archiveArtifacts artifacts: 'trivy-report.html', fingerprint: true
+                    }
+                }
+            }
+        }
         stage('Generate Kustomization File & Copy .env file') {
+            when {
+                not{
+                environment name: 'GIT_TAG_NAME', value: 'null'
+                }
+            }
       steps {
         script {
           container('kubectl') {
@@ -139,6 +228,11 @@ secretGenerator:
       }
         }
         stage('Deploy') {
+            when {
+                not{
+                environment name: 'GIT_TAG_NAME', value: 'null'
+                }
+            }
       steps {
         script {
           container('kubectl') {
@@ -154,15 +248,29 @@ secretGenerator:
       }
         }
   }
+        post {
+            always {
+                publishHTML (target: [
+                    reportDir: '',
+                    reportFiles: 'trivy-report.html',
+                    reportName: 'Trivy Security Report'
+                ])
+            }
+        }
 }
 
 /** @return The tag name, or `null` if the current commit isn't a tag. */
 String gitTagName() {
   commit = getCommit()
   if (commit) {
-    desc = sh(script: "git describe --tags ${commit}", returnStdout: true)?.trim()
-    if (isTag(desc)) {
-      return desc
+try {
+      desc = sh(script: "git describe --tags ${commit}", returnStdout: true).trim()
+      if (isTag(desc)) {
+        return desc
+      }
+    } catch (Exception e) {
+      // If the git describe fails, return null
+      return commit
     }
   }
   return null
