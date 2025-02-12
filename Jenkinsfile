@@ -35,7 +35,8 @@ spec:
     // CREDENTIAL NEEDS
     string(defaultValue: 'prome-gateway-agent-env', description: '.env file credentialid', name: 'app_dot_env_credential_id')
     string(defaultValue: 'pso_cluster_kubeconfig', description: 'KubeConfig File to do deploy step', name: 'kubeconfig_credential_id')
-    string(defaultValue: 'harbor_k-harbor-01-token', description: 'Harbor Credential', name: 'harbor_user_pass_credential_id')
+    string(defaultValue: 'harbor_k-harbor-01-username', description: 'Harbor Credential', name: 'harbor_user_credential_id')
+    string(defaultValue: 'harbor_k-harbor-01-password', description: 'Harbor Credential', name: 'harbor_password_credential_id')
     // CI - HARBOR IMAGE
     string(defaultValue: 'k-harbor-01.server.maas', description: 'Container Registry Host for use in container tag', name: 'ContainerRegistryHost')
     string(defaultValue: 'prome-gateway', description: 'Container Registry Project for use in container tag', name: 'ContainerRegistryProject')
@@ -51,7 +52,8 @@ spec:
 
   environment {
       // # HARBOR
-      TOKEN_CONTAINER_REGISTRY = credentials("${params.harbor_user_pass_credential_id}")
+      CI_REGISTRY_USER = credentials("${params.harbor_user_credential_id}")
+      CI_REGISTRY_PASSWORD = credentials("${params.harbor_password_credential_id}")
       // # KUBERNETES
       KUBERNETES_KUSTOMIZE_PATH = "${params.kustomizae_path}"
       KUBERNETES_KUSTOMIZE_FOLDER = "${params.kustomize_folder}"
@@ -88,19 +90,20 @@ spec:
       }
     }
     stage('Create /kaniko/.docker/config.json') {
-            when {
-                not{
-                environment name: 'GIT_TAG_NAME', value: 'null'
+         
+            steps {
+                        container('kaniko') {
+              dir(env.WORKSPACE) {
+                script {
+                    env.CI_REGISTRY_TMP = env.CI_REGISTRY_USER+":"+env.CI_REGISTRY_PASSWORD
+                    env.CI_REGISTRY_AUTH = sh(script: 'echo -n $CI_REGISTRY_TMP | base64', returnStdout: true).trim()
+                    sh('echo "{\\"auths\\":{\\"$CONTAINER_REGISTRY_HOST\\":{\\"auth\\":\\"$CI_REGISTRY_AUTH\\"}}}" > /kaniko/.docker/config.json')
                 }
-            }
-      steps {
-          container('kaniko') {
-              dir('prome-alert-gateway') {
-                sh('echo "{\\\"auths\\\":{\\\"$CONTAINER_REGISTRY_HOST\\\":{\\\"auth\\\":\\\"$TOKEN_CONTAINER_REGISTRY\\\"}}}"  > /kaniko/.docker/config.json')
-              }
           }
       }
     }
+    
+  }
     stage('CI Kaniko Build Image & Push to Harbor') {
             when {
                 not{
