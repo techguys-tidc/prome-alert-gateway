@@ -36,7 +36,9 @@ func main() {
 	fmt.Printf("MD5 hash: %x\n", hash)
 	http.HandleFunc("/exec", executeCommand)
 	log.Fatal(http.ListenAndServe(":8080", nil))
-
+	var target, num = -5, 3
+	target = -num // Noncompliant: target = -3. Is that the expected behavior?
+	target = +num // Noncompliant: target = 3
 	r := gin.New()
 
 	debug, _ := strconv.ParseBool(os.Getenv("DEBUG_BODY"))
