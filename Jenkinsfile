@@ -127,6 +127,32 @@ spec:
           }
       }
     }
+stage('trivy registry login') {
+         
+            steps {
+                        container('trivy') {
+
+                script {
+                    env.CI_REGISTRY_TMP = env.CI_REGISTRY_USER+":"+env.CI_REGISTRY_PASSWORD
+                    env.CI_REGISTRY_AUTH = sh(script: 'echo -n $CI_REGISTRY_TMP | base64', returnStdout: true).trim()
+                    sh('trivy registry login --insecure --username \\"$CI_REGISTRY_USER\\" --password \\"$CI_REGISTRY_PASSWORD\\" $CONTAINER_REGISTRY_HOST')
+                }
+
+      }
+    }
+    
+  }
+        stage('Scan Image with Trivy') {
+            steps {
+                container('trivy') {
+                    script {
+                        //sh('trivy image --insecure --format template --template "@/opt/bitnami/trivy/contrib/html.tpl" -o trivy-report.html k-harbor-01.server.maas/prome-gateway/prome-alert-gateway:dev-gong-v0.0.3')
+                        sh('trivy image --insecure --format template --template "@/opt/bitnami/trivy/contrib/html.tpl" -o trivy-report.html $CONTAINER_REGISTRY_HOST/$CONTAINER_REGISTRY_PROJECT/$CONTAINER_REGISTRY_CONTAINER_NAME:$CONTAINER_REGISTRY_CONTAINER_TAG')
+                        archiveArtifacts artifacts: 'trivy-report.html', fingerprint: true
+                    }
+                }
+            }
+        }
         stage('Generate Kustomization File & Copy .env file') {
             when {
                 not{
@@ -202,6 +228,15 @@ secretGenerator:
       }
         }
   }
+        post {
+            always {
+                publishHTML (target: [
+                    reportDir: '',
+                    reportFiles: 'trivy-report.html',
+                    reportName: 'Trivy Security Report'
+                ])
+            }
+        }
 }
 
 /** @return The tag name, or `null` if the current commit isn't a tag. */
