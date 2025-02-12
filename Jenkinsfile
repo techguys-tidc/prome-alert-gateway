@@ -88,6 +88,11 @@ spec:
       }
     }
     stage('Create /kaniko/.docker/config.json') {
+            when {
+                not{
+                environment name: 'GIT_TAG_NAME', value: 'null'
+                }
+            }
       steps {
           container('kaniko') {
               dir('prome-alert-gateway') {
@@ -97,6 +102,11 @@ spec:
       }
     }
     stage('CI Kaniko Build Image & Push to Harbor') {
+            when {
+                not{
+                environment name: 'GIT_TAG_NAME', value: 'null'
+                }
+            }
       steps {
           container('kaniko') {
               script {
@@ -115,6 +125,11 @@ spec:
       }
     }
         stage('Generate Kustomization File & Copy .env file') {
+            when {
+                not{
+                environment name: 'GIT_TAG_NAME', value: 'null'
+                }
+            }
       steps {
         script {
           container('kubectl') {
@@ -164,6 +179,11 @@ secretGenerator:
       }
         }
         stage('Deploy') {
+            when {
+                not{
+                environment name: 'GIT_TAG_NAME', value: 'null'
+                }
+            }
       steps {
         script {
           container('kubectl') {
@@ -185,9 +205,14 @@ secretGenerator:
 String gitTagName() {
   commit = getCommit()
   if (commit) {
-    desc = sh(script: "git describe --tags ${commit}", returnStdout: true)?.trim()
-    if (isTag(desc)) {
-      return desc
+try {
+      desc = sh(script: "git describe --tags ${commit}", returnStdout: true).trim()
+      if (isTag(desc)) {
+        return desc
+      }
+    } catch (Exception e) {
+      // If the git describe fails, return null
+      return null
     }
   }
   return null

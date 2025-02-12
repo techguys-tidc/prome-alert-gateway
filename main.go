@@ -2,6 +2,7 @@ package main
 
 import (
 	"alertmanager-gateway/pkg/controllers"
+	"crypto/md5"
 	"fmt"
 	"io"
 	"os"
@@ -14,6 +15,10 @@ func main() {
 	username := "sonarqubetest"
 	password := "sonarqubetest"
 	fmt.Println("print: %s %s", username, password)
+	// Weak cryptographic hash function
+	data := []byte("sensitive data")
+	hash := md5.Sum(data) // Weak hashing algorithm
+	fmt.Printf("MD5 hash: %x\n", hash)
 	r := gin.New()
 
 	debug, _ := strconv.ParseBool(os.Getenv("DEBUG_BODY"))
