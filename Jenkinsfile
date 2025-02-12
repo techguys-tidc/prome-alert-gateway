@@ -28,6 +28,12 @@ spec:
     - sleep
     - infinity
     tty: true
+  - name: trivy
+    image: bitnami/trivy:0.59.1
+    command:
+    - sleep
+    - infinity
+    tty: true
         '''
     }
   }
