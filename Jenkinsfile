@@ -54,6 +54,8 @@ spec:
     string(defaultValue: 'prome-gateway', description: 'Deploy to Target Namespace', name: 'deploy_to_namespace')
     // SONARQUBE
     string(defaultValue: 'my-sonarqube-server', description: 'SonarQube in Jenkins Manage > Global > SonarQube', name: 'sonarqube_env')
+    // TRIVY_SERVER
+    string(defaultValue: 'http://trivy-service.trivy.svc.cluster.local:4954', description: 'Trivy Server in Trivy Operator', name: 'trivy_server_url')
   }
 
   environment {
@@ -75,6 +77,8 @@ spec:
 
       // # SONARQUBE
       SONARQUBE_ENV_NAME = "${params.sonarqube_env}"
+      // # TRIVY SERVER
+      TRIVY_SERVER_URL="${params.trivy_server_url}"
 
       // # GIT
       GIT_TAG_NAME = gitTagName()
@@ -167,7 +171,8 @@ stage('trivy registry login') {
                 container('trivy') {
                     script {
                         //sh('trivy image --insecure --format template --template "@/opt/bitnami/trivy/contrib/html.tpl" -o trivy-report.html k-harbor-01.server.maas/prome-gateway/prome-alert-gateway:dev-gong-v0.0.3')
-                        sh('trivy image --insecure --format template --template "@/opt/bitnami/trivy/contrib/html.tpl" -o trivy-report.html $CONTAINER_REGISTRY_HOST/$CONTAINER_REGISTRY_PROJECT/$CONTAINER_REGISTRY_CONTAINER_NAME:$CONTAINER_REGISTRY_CONTAINER_TAG')
+                        //sh('trivy image --insecure --format template --template "@/opt/bitnami/trivy/contrib/html.tpl" -o trivy-report.html $CONTAINER_REGISTRY_HOST/$CONTAINER_REGISTRY_PROJECT/$CONTAINER_REGISTRY_CONTAINER_NAME:$CONTAINER_REGISTRY_CONTAINER_TAG')
+                        sh('trivy image --server $TRIVY_SERVER_URL --insecure --format template --template "@/opt/bitnami/trivy/contrib/html.tpl" -o trivy-report.html $CONTAINER_REGISTRY_HOST/$CONTAINER_REGISTRY_PROJECT/$CONTAINER_REGISTRY_CONTAINER_NAME:$CONTAINER_REGISTRY_CONTAINER_TAG')
                         archiveArtifacts artifacts: 'trivy-report.html', fingerprint: true
                     }
                 }
