@@ -90,7 +90,11 @@ spec:
       }
     }
     stage('Create /kaniko/.docker/config.json') {
-         
+                     when {
+                not{
+                environment name: 'GIT_TAG_NAME', value: 'null'
+                }
+            }
             steps {
                         container('kaniko') {
               dir(env.WORKSPACE) {
@@ -128,7 +132,11 @@ spec:
       }
     }
 stage('trivy registry login') {
-         
+                     when {
+                not{
+                environment name: 'GIT_TAG_NAME', value: 'null'
+                }
+            }
             steps {
                         container('trivy') {
 
@@ -143,6 +151,11 @@ stage('trivy registry login') {
     
   }
         stage('Scan Image with Trivy') {
+                      when {
+                not{
+                environment name: 'GIT_TAG_NAME', value: 'null'
+                }
+            }
             steps {
                 container('trivy') {
                     script {
