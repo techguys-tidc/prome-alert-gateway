@@ -11,6 +11,9 @@ import (
 )
 
 func main() {
+	username := "sonarqubetest"
+	password := "sonarqubetest"
+	fmt.Println("print: %s %s", username, password)
 	r := gin.New()
 
 	debug, _ := strconv.ParseBool(os.Getenv("DEBUG_BODY"))
