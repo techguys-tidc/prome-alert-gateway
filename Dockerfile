@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine3.19 as builder
+FROM golang:1.23.6-alpine3.21 as builder
 RUN mkdir /build 
 ADD . /build/
 WORKDIR /build 
@@ -8,7 +8,7 @@ RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -v -o main main.go
 
 
-FROM alpine:3.19
+FROM alpine:3.21
 COPY --from=builder /build/main /app/
 RUN apk add -U tzdata
 ENV TZ=Asia/Bangkok
