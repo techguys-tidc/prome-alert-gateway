@@ -1,17 +1,18 @@
 
 - [Custom MSTeam](#custom-msteam)
+- [Call Prome-Gateway-Agent API Services](#call-prome-gateway-agent-api-services)
+  - [Curl to endpoint /line-notify](#curl-to-endpoint-line-notify)
+  - [Curl to endpoint /msteams-notify](#curl-to-endpoint-msteams-notify)
+  - [Curl to endpoint /uvdesk-notify](#curl-to-endpoint-uvdesk-notify)
 - [Go Lang Debug](#go-lang-debug)
   - [Clone git](#clone-git)
-  - [Run](#run)
+  - [Run Go](#run-go)
 - [Build Docker Image](#build-docker-image)
   - [Clone git](#clone-git-1)
   - [Docker Build](#docker-build)
   - [Docker Run](#docker-run)
   - [Troubleshoot Container Log](#troubleshoot-container-log)
   - [Stop \& Terminate Container](#stop--terminate-container)
-- [Call Prome Gateway API Services](#call-prome-gateway-api-services)
-  - [Curl to endpoint /line-notify](#curl-to-endpoint-line-notify)
-  - [Curl to endpoint /msteams-notify](#curl-to-endpoint-msteams-notify)
 - [Jenkins CI/CD](#jenkins-cicd)
   - [CI using Jenkinsfile](#ci-using-jenkinsfile)
   - [CD using Kuberneetes](#cd-using-kuberneetes)
@@ -25,6 +26,48 @@ https://amdesigner.azurewebsites.net/
 copy json payload in the website and put into json request under attribute content
 
 
+# Call Prome-Gateway-Agent API Services
+
+## Curl to endpoint /line-notify
+
+```shell
+{
+JSON_INPUT_FILENAME=example-request-test.json
+PROME_GATEWAY_URL=127.0.0.1:8080
+API_ENDPOINT=line-notify
+LINE_API_TOKEN=1341@2342343243213123123423423423434
+curl -X POST http://${PROME_GATEWAY_URL}/${API_ENDPOINT}?token=${LINE_API_TOKEN} \
+     -H "Content-Type: application/json" \
+     -d @${JSON_INPUT_FILENAME}
+}
+```
+
+## Curl to endpoint /msteams-notify
+
+```shell
+{
+JSON_INPUT_FILENAME=example-request-test.json
+PROME_GATEWAY_URL=127.0.0.1:8080
+API_ENDPOINT=msteams-notify
+curl -X POST http://${PROME_GATEWAY_URL}/${API_ENDPOINT} \
+     -H "Content-Type: application/json" \
+     -d @${JSON_INPUT_FILENAME}
+}
+```
+
+## Curl to endpoint /uvdesk-notify
+
+```shell
+{
+JSON_INPUT_FILENAME=example-request-UVdesk.json
+PROME_GATEWAY_URL=127.0.0.1:8080
+API_ENDPOINT=uvdesk-notify
+curl -X POST http://${PROME_GATEWAY_URL}/${API_ENDPOINT} \
+     -H "Content-Type: application/json" \
+     -d @${JSON_INPUT_FILENAME}
+}
+```
+
 # Go Lang Debug
 
 ## Clone git
@@ -36,7 +79,7 @@ cd prome-alert-gateway
 }
 ```
 
-## Run
+## Run Go
 
 ```shell
 {
@@ -102,34 +145,6 @@ docker ps | grep ${CONTAINER_NAME}
 }
 ```
 
-# Call Prome Gateway API Services
-
-## Curl to endpoint /line-notify
-
-```shell
-{
-JSON_INPUT_FILENAME=example-request-test.json
-PROME_GATEWAY_URL=127.0.0.1:8080
-API_ENDPOINT=line-notify
-LINE_API_TOKEN=1341@2342343243213123123423423423434
-curl -X POST http://${PROME_GATEWAY_URL}/${API_ENDPOINT}?token=${LINE_API_TOKEN} \
-     -H "Content-Type: application/json" \
-     -d @${JSON_INPUT_FILENAME}
-}
-```
-
-## Curl to endpoint /msteams-notify
-
-```shell
-{
-JSON_INPUT_FILENAME=example-request-test.json
-PROME_GATEWAY_URL=127.0.0.1:8080
-API_ENDPOINT=msteams-notify
-curl -X POST http://${PROME_GATEWAY_URL}/${API_ENDPOINT} \
-     -H "Content-Type: application/json" \
-     -d @${JSON_INPUT_FILENAME}
-}
-```
 
 # Jenkins CI/CD
 
@@ -151,3 +166,7 @@ cp ${DOT_ENV_FILE} base/.env
 kubectl -k base
 }
 ```
+
+
+
+
