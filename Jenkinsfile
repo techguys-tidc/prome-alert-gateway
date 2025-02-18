@@ -275,7 +275,7 @@ try {
       }
     } catch (Exception e) {
       // If the git describe fails, return null
-      return commit
+      return null
     }
   }
   return null
