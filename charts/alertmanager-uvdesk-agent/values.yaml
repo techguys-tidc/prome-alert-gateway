@@ -22,8 +22,8 @@ appconfig:
   envFile: |
     CREATE_TICKET_ENDPOINT="http://10.10.54.4/uvdesk-community-v1.1.7/public/api/v1/ticket"
     GET_ACCESS_TOKEN_ENDPOINT="http://10.10.54.4:5000/api/v2/authen"
-    USERNAME="tu"
-    PASSWORD="4567@"
+    USERNAME="tor"
+    PASSWORD="1234@"
 volumes: 
   - name: app-config
     secret:
@@ -59,9 +59,14 @@ ingress:
 podAnnotations: {}
 podLabels: {}
 serviceAccount:
-  create: false
-podSecurityContext: {}
-securityContext: {}
+  create: true
+podSecurityContext:
+  runAsNonRoot: true  # Ensures that the container cannot run as root
+  runAsUser: 1000     # Specifies a non-root user ID
+  runAsGroup: 1000
+  fsGroup: 1000
+securityContext:
+  allowPrivilegeEscalation: false
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
