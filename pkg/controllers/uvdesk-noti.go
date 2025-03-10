@@ -28,7 +28,7 @@ func UVdeskNoti(c *gin.Context) {
 		return
 	}
 
-	token := requester.PostUVdeskAccesstoken(access_token_endpoint, msgBody)
+	
 
 	rawData, err := c.GetRawData()
 	if err != nil {
@@ -47,6 +47,18 @@ func UVdeskNoti(c *gin.Context) {
 	// 	return
 	// }
 	// fmt.Println(payload)
+
+	// fmt.Println("Alert Status:", payload.Status)
+	if payload.Status != "firing" {
+		if len(payload.Alerts) > 0 {
+			fmt.Println("[Skip Firing] Status is not firing:", payload.Alerts[0].Labels.Subject)
+		} else {
+			fmt.Println("[Skip Firing] Status is not firing, but no alerts available.")
+		}
+		return
+	}
+
+	token := requester.PostUVdeskAccesstoken(access_token_endpoint, msgBody)
 
 	c.JSON(http.StatusOK, gin.H{"code": 0})
 

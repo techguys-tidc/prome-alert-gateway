@@ -1,0 +1,69 @@
+apiVersion: skaffold/v4beta12
+kind: Config
+build:
+  artifacts:
+  - image: k-harbor-01.server.maas/public/prome-gateway-agent
+test:
+  - image: k-harbor-01.server.maas/public/prome-gateway-agent
+    custom:
+      - command: /home/nattawat.ujj/sonar-scanner/sonar-scanner-7.0.2.4839-linux-x64/bin/sonar-scanner -Dsonar.projectKey=skaffold -Dsonar.sources=. -Dsonar.host.url=http://sonarqube.pso.k8s.maas -Dsonar.login=sqa_7c64250ea6938e8fafe49c6babbbe8136f50cd26 && echo $IMAGE
+        timeoutSeconds: 300
+        # dependencies:
+        #   paths:
+        #   -  "*_test.go"
+        #   -  "test.sh"
+# deploy:
+#   helm:
+#     releases:
+#     - name: skaffold-helm
+#       chartPath: charts
+#       setValueTemplates:
+#         image.repository: "{{.IMAGE_REPO_k_harbor_01_server_maas_public_skaffold_helm}}"
+#         image.tag: "{{.IMAGE_TAG_k_harbor_01_server_maas_public_skaffold_helm}}@{{.IMAGE_DIGEST_k_harbor_01_server_maas_public_skaffold_helm}}"
+
+
+# profiles:
+#   - name: dev
+#     activation:
+#       - env: KUBECONFIG='/home/nattawat.ujj/.kube/rke2-gong-kubeadm.conf'
+#     deploy:
+#       kubeContext: rke2-kubeadm
+#       helm:
+#         releases:
+#           - name: my-app-dev
+#             chartPath: charts
+#             valuesFiles:
+#               - "helm-values/dev/values-dev.yaml"
+#             setValueTemplates:
+#               image.repository: "{{.IMAGE_REPO_k_harbor_01_server_maas_public_skaffold_helm}}"
+#               image.tag: "{{.IMAGE_TAG_k_harbor_01_server_maas_public_skaffold_helm}}@{{.IMAGE_DIGEST_k_harbor_01_server_maas_public_skaffold_helm}}"
+#             namespace: dev-myapp
+#             createNamespace: true  # Auto-create namespace
+#   - name: qa
+#     deploy:
+#       kubeContext: rke2-mopf-cluster
+#       helm:
+#         releases:
+#           - name: my-app-qa
+#             chartPath: charts
+#             valuesFiles:
+#               - "helm-values/qa/values-qa.yaml"
+#             setValueTemplates:
+#               image.repository: "{{.IMAGE_REPO_k_harbor_01_server_maas_public_skaffold_helm}}"
+#               image.tag: "{{.IMAGE_TAG_k_harbor_01_server_maas_public_skaffold_helm}}@{{.IMAGE_DIGEST_k_harbor_01_server_maas_public_skaffold_helm}}"
+#             namespace: qa-myapp
+#             createNamespace: true  # Auto-create namespace
+#   - name: prod
+#     deploy:
+#       kubeContext: rke2-mopf-cluster
+#       helm:
+#         releases:
+#           - name: my-app-prod
+#             chartPath: charts
+#             valuesFiles:
+#               - "helm-values/prod/values-prod.yaml"
+#             setValueTemplates:
+#               image.repository: "{{.IMAGE_REPO_k_harbor_01_server_maas_public_skaffold_helm}}"
+#               image.tag: "{{.IMAGE_TAG_k_harbor_01_server_maas_public_skaffold_helm}}@{{.IMAGE_DIGEST_k_harbor_01_server_maas_public_skaffold_helm}}"
+#             namespace: prod-myapp
+#             createNamespace: true  # Auto-create namespace
