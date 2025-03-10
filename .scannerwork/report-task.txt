@@ -1,0 +1,6 @@
+projectKey=skaffold
+serverUrl=http://sonarqube.pso.k8s.maas
+serverVersion=25.1.0.102122
+dashboardUrl=http://sonarqube.pso.k8s.maas/dashboard?id=skaffold
+ceTaskId=e1a87202-4c47-4d4f-b677-e1ef80f5c854
+ceTaskUrl=http://sonarqube.pso.k8s.maas/api/ce/task?id=e1a87202-4c47-4d4f-b677-e1ef80f5c854
